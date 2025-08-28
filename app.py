@@ -9,9 +9,13 @@ app.secret_key = "rahasia_tpq"
 
 # 🔹 koneksi ke PostgreSQL (gunakan DATABASE_URL dari Railway)
 def get_db_connection():
-    DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:password@localhost:5432/tpq_db")
+    DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:MqEOqHExEGRRyOUcnzhUShyfDiodKudo@postgres.railway.internal:5432/railway")
     conn = psycopg2.connect(DATABASE_URL, sslmode="require" if "railway" in DATABASE_URL else "disable")
     return conn
+
+
+
+
 
 @app.route("/")
 def index():
