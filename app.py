@@ -5,17 +5,18 @@ from fpdf import FPDF
 import os
 
 app = Flask(__name__)
-app.secret_key = "rahasia_tpq"
+app.secret_key = os.environ.get("SECRET_KEY", "rahasia_tpq")  # ✅ lebih aman
 
-# 🔹 koneksi ke PostgreSQL (gunakan DATABASE_URL dari Railway)
+# 🔹 koneksi ke PostgreSQL (DATABASE_URL dari Railway)
 def get_db_connection():
-    DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:MqEOqHExEGRRyOUcnzhUShyfDiodKudo@postgres.railway.internal:5432/railway")
-    conn = psycopg2.connect(DATABASE_URL, sslmode="require" if "railway" in DATABASE_URL else "disable")
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+    if not DATABASE_URL:
+        raise Exception("DATABASE_URL tidak ditemukan. Pastikan sudah di-set di Railway.")
+
+    # ✅ Railway butuh sslmode=require, tapi untuk lokal bisa disable
+    sslmode = "require" if "railway" in DATABASE_URL or "amazonaws" in DATABASE_URL else "disable"
+    conn = psycopg2.connect(DATABASE_URL, sslmode=sslmode)
     return conn
-
-
-
-
 
 @app.route("/")
 def index():
@@ -100,7 +101,7 @@ def biodata_murid(id):
     conn.close()
     return render_template("biodata_murid.html", murid=murid)
 
-# === fungsi generate_diskripsi (saya isi sederhana biar jalan) ===
+# === fungsi generate_diskripsi (masih sederhana) ===
 def generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran):
     return f"Bacaan: {bacaan}, Menulis: {menulis}, Hafalan: {hafalan}, Ahlak: {ahlak}, Kehadiran: {kehadiran}"
 
@@ -169,6 +170,7 @@ def delete_murid(id):
     conn.close()
     return redirect(url_for("data_murid"))
 
-# ✅ jalankan Flask
+# ✅ jalankan Flask (untuk Railway, PORT harus diambil dari env)
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
