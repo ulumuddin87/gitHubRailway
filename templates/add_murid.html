@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Tambah Murid{% endblock %}
+{% block content %}
+<h3>Tambah Murid</h3>
+<form method="POST">
+  <div class="mb-3">
+    <label>Nama</label>
+    <input type="text" name="nama" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Jilid</label>
+    <input type="number" name="jilid" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Kelas</label>
+    <input type="text" name="kelas" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Alamat</label>
+    <textarea name="alamat" class="form-control" required></textarea>
+  </div>
+  <div class="mb-3">
+    <label>Wali Murid</label>
+    <input type="text" name="wali_murid" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Wali Kelas</label>
+    <input type="text" name="wali_kelas" class="form-control" required>
+  </div>
+  <button type="submit" class="btn btn-success">Simpan</button>
+  <a href="{{ url_for('data_murid') }}" class="btn btn-secondary">⬅ Kembali</a>
+</form>
+{% endblock %}

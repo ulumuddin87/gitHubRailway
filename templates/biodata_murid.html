@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}Lengkapi Biodata Murid{% endblock %}
+{% block content %}
+
+<div class="container py-4">
+  <div class="text-center mb-4">
+    <h2 class="fw-bold">📋 Lengkapi Biodata Murid</h2>
+    <p class="text-muted">Isi data murid dengan lengkap & akurat</p>
+  </div>
+
+  <form method="POST" class="row g-4">
+
+    <!-- Kolom Kiri -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 rounded-3 h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-3 text-primary">👦 Data Murid</h5>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nama</label>
+            <input type="text" name="nama" value="{{ murid['nama'] or '' }}" class="form-control">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">No Induk</label>
+            <input type="text" name="no_induk" value="{{ murid['no_induk'] or '' }}" class="form-control">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">NIK</label>
+            <input type="text" name="nik" value="{{ murid['nik'] or '' }}" class="form-control">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Tempat & Tanggal Lahir</label>
+            <input type="text" name="tempat_tanggal_lahir" value="{{ murid['tempat_tanggal_lahir'] or '' }}" class="form-control">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Jenis Kelamin</label>
+            <select name="jenis_kelamin" class="form-select">
+              <option value="L" {% if murid['jenis_kelamin']=="L" %}selected{% endif %}>Laki-laki</option>
+              <option value="P" {% if murid['jenis_kelamin']=="P" %}selected{% endif %}>Perempuan</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Status dalam Keluarga</label>
+            <input type="text" name="status_dalam_keluarga" value="{{ murid['status_dalam_keluarga'] or '' }}" class="form-control">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Anak ke-</label>
+            <input type="number" name="anak_ke" value="{{ murid['anak_ke'] or '' }}" class="form-control">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kolom Kanan -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-body">
+          <h5 class="card-title mb-3 text-success">👨‍👩‍👧 Data Orang Tua</h5>
+
+          <div class="row">
+            <div class="mb-2">
+              <label class="form-label">Nama Ayah</label>
+              <input type="text" name="nama_ayah" 
+              value="{{ murid['nama_ayah'] or '' }}" 
+              placeholder="orang tua / wali" 
+              class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">No Tlp Ayah</label>
+              <input type="text" name="no_tlp_ayah" value="{{ murid['no_tlp_ayah'] or '' }}" class="form-control">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Pekerjaan Ayah</label>
+            <input type="text" name="pekerjaan_ayah" value="{{ murid['pekerjaan_ayah'] or '' }}" class="form-control">
+          </div>
+
+          <hr>
+
+          <div class="row">
+            <div class="mb-2">
+              <label class="form-label fw-semibold">Nama Ibu</label>
+              <input type="text" name="nama_ibu" 
+              value="{{ murid['nama_ibu'] or '' }}" 
+              placeholder="orang tua / wali" 
+              class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">No Tlp Ibu</label>
+              <input type="text" name="no_tlp_ibu" value="{{ murid['no_tlp_ibu'] or '' }}" class="form-control">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Pekerjaan Ibu</label>
+            <input type="text" name="pekerjaan_ibu" value="{{ murid['pekerjaan_ibu'] or '' }}" class="form-control">
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body">
+          <h5 class="card-title mb-3 text-warning">🏠 Alamat</h5>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">Dusun</label>
+              <input type="text" name="dusun" value="{{ murid['dusun'] or '' }}" class="form-control">
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label fw-semibold">RT</label>
+              <input type="text" name="rt" value="{{ murid['rt'] or '' }}" class="form-control">
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label fw-semibold">RW</label>
+              <input type="text" name="rw" value="{{ murid['rw'] or '' }}" class="form-control">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Desa</label>
+            <input type="text" name="desa" value="{{ murid['desa'] or '' }}" class="form-control">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Kecamatan</label>
+            <input type="text" name="kecamatan" value="{{ murid['kecamatan'] or '' }}" class="form-control">
+          </div>
+
+           
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Kabupaten/Kota</label>
+            <input type="text" name="kabupaten_kota" value="{{ murid['kabupaten_kota'] or '' }}" class="form-control">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Provinsi</label>
+            <input type="text" name="provinsi" value="{{ murid['provinsi'] or '' }}" class="form-control">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tombol -->
+    <div class="col-12 text-end mt-4">
+      <button type="submit" class="btn btn-primary px-4 me-2">
+        💾 Simpan
+      </button>
+      <a href="{{ url_for('index') }}" class="btn btn-outline-secondary px-4">
+        ⬅️ Kembali
+      </a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

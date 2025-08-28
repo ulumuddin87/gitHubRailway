@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cetak Data Murid</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        font-size: 12px;
+      }
+      table {
+        font-size: 11px;
+      }
+    }
+    .kop-surat {
+      text-align: center;
+      border-bottom: 3px solid black;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .kop-surat h4, .kop-surat p {
+      margin: 0;
+      font-size: 14px;
+    }
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    th, td {
+      white-space: nowrap;
+    }
+  </style>
+
+  <script>
+    window.onload = function() {
+      window.print();
+    }
+  </script>
+</head>
+<body class="p-3">
+
+  <!-- Kop Surat -->
+  <div class="kop-surat text-center mb-4">
+    <h4 style="font-weight:bold;">TPQ MAFATIHUL HUDA</h4>
+    <p>Jl. Contoh No. 123, Desa Maju, Kecamatan Makmur</p>
+    <p>Telp: 0812-3456-7890</p>
+    <hr style="border:1px solid black; margin:3px 0;">
+    <hr style="border:2px solid black; margin:0;">
+  </div>
+
+  <!-- Tombol aksi (tidak ikut dicetak) -->
+<div class="mb-3 no-print">
+  <div class="d-flex flex-wrap gap-2 mb-2">
+    <a href="{{ url_for('data_murid') }}" class="btn btn-secondary btn-sm">⬅ Kembali</a>
+    <a href="{{ url_for('cetak_data') }}" class="btn btn-primary btn-sm">🖨 Cetak Semua</a>
+  </div>
+
+  <div class="row">
+    <!-- Cetak per jilid (kiri) -->
+    <div class="col-md-6 mb-2">
+      <div class="d-flex flex-wrap gap-2">
+        {% for j in jilid_list %}
+          <a href="{{ url_for('cetak_per_jilid', jilid=j['jilid']) }}" 
+             class="btn btn-outline-success btn-sm">
+             Cetak Jilid {{ j['jilid'] }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Cetak per kelas (kanan) -->
+    <div class="col-md-6 mb-2 text-md-end">
+      <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+        {% for k in kelas_list %}
+          <a href="{{ url_for('cetak_per_kelas', kelas=k['kelas']) }}" 
+             class="btn btn-outline-primary btn-sm">
+             Cetak Kelas {{ k['kelas'] }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Judul dinamis -->
+  <h5 class="text-center mb-3">
+    <u>
+      DATA MURID
+      {% if kelas %} KELAS {{ kelas }}{% endif %}
+      {% if jilid %} JILID {{ jilid }}{% endif %}
+    </u>
+  </h5>
+
+
+
+
+  
+  <!-- Tabel data murid -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Nama</th>
+          <th>Jilid</th>
+          <th>Kelas</th>
+          <th>Alamat</th>
+          <th>Wali Murid</th>
+          <th>Wali Kelas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in murid %}
+        <tr>
+          <td>{{ m.id }}</td>
+          <td>{{ m.nama }}</td>
+          <td>{{ m.jilid }}</td>
+          <td>{{ m.kelas }}</td>
+          <td>{{ m.alamat }}</td>
+          <td>{{ m.wali_murid }}</td>
+          <td>{{ m.wali_kelas }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

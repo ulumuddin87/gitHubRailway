@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Nilai Murid{% endblock %}
+{% block content %}
+
+<div class="card shadow-sm">
+  <div class="card-header bg-success text-white">
+    <h5 class="mb-0">Input Nilai Murid</h5>
+  </div>
+  <div class="card-body">
+      <ul>
+      <li><b>Nama:</b> {{ murid.nama }}</li>
+      <li><b>Kelas:</b> {{ murid.kelas }}</li>
+      <li><b>Jilid:</b> {{ murid.jilid }}</li>
+      <li><b>Wali Kelas:</b> {{ murid.wali_kelas }}</li>
+    </ul>
+
+    <form method="POST">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Nilai Membaca</label>
+      <input type="number" name="nilai_bacaan" class="form-control" value="{{ murid.nilai_bacaan or '' }}">
+    </div>
+      <div class="col-md-6">
+      <label class="form-label">Nilai Menulis</label>
+      <input type="number" name="nilai_menulis" class="form-control" value="{{ murid.nilai_menulis or '' }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Nilai Hafalan</label>
+      <input type="number" name="nilai_hafalan" class="form-control" value="{{ murid.nilai_hafalan or '' }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">nilai_ahlak</label>
+      <input type="number" name="nilai_ahlak" class="form-control" value="{{ murid.nilai_ahlak or '' }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Nilai Kehadiran</label>
+      <input type="number" name="nilai_kehadiran" class="form-control" value="{{ murid.nilai_kehadiran or '' }}">
+    </div>
+    <div class="col-12">
+      <label class="form-label">Diskripsi</label>
+      <textarea name="diskripsi" rows="5" class="form-control"
+        placeholder="Otomatis terisi bila dikosongkan">{{ murid.diskripsi or auto_diskripsi }}</textarea>
+      <div class="form-text">Kosongkan bila ingin deskripsi otomatis berdasarkan nilai per-aspek.</div>
+    </div>
+  </div>
+
+      <div class="d-flex justify-content-between">
+        <a href="{{ url_for('data_murid') }}" class="btn btn-secondary">Kembali</a>
+        <button type="submit" class="btn btn-success">Simpan Nilai</button>
+       
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
