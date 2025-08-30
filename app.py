@@ -13,10 +13,18 @@ def get_db_connection():
     if not DATABASE_URL:
         raise Exception("DATABASE_URL tidak ditemukan. Pastikan sudah di-set di Railway.")
 
-    # ✅ Railway butuh sslmode=require, tapi untuk lokal bisa disable
-    sslmode = "require" if "railway" in DATABASE_URL or "amazonaws" in DATABASE_URL else "disable"
+    # Railway kadang kasih postgres:// → harus diubah ke postgresql://
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://postgres:MqEOqHExEGRRyOUcnzhUShyfDiodKudo@postgres.railway.internal:5432/railway", 1)
+        
+
+    # Kalau jalan di Railway (internal), SSL tidak perlu
+    # Kalau kamu pakai external DB (misal supabase/amazonaws) → pakai sslmode=require
+    sslmode = "require" if "amazonaws" in DATABASE_URL else "disable"
+
     conn = psycopg2.connect(DATABASE_URL, sslmode=sslmode)
     return conn
+
 
 @app.route("/")
 def index():
