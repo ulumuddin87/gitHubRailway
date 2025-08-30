@@ -15,7 +15,8 @@ def get_db_connection():
 
     # Railway kadang kasih postgres:// → harus diubah ke postgresql://
     if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://postgres:MqEOqHExEGRRyOUcnzhUShyfDiodKudo@postgres.railway.internal:5432/railway", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
         
 
     # Kalau jalan di Railway (internal), SSL tidak perlu
