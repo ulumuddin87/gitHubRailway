@@ -49,6 +49,15 @@ def logout():
     session.pop("user", None)
     return redirect(url_for("login"))
 
+
+# Debug route untuk cek env
+@app.route("/debug/env")
+def debug_env():
+    keys = ["DATABASE_URL", "PGURL", "RAILWAY_DATABASE_URL"]
+    env_data = {k: os.getenv(k) for k in keys}
+    return jsonify(env_data)
+
+
 @app.route("/murid")
 def data_murid():
     if not session.get("user"):
