@@ -49,6 +49,14 @@
       </tr>
       {% endfor %}
     </tbody>
+    {% if murid %}
+  {% for m in murid %}
+    <tr> ... </tr>
+  {% endfor %}
+{% else %}
+  <tr><td colspan="8" class="text-center">Belum ada data murid</td></tr>
+{% endif %}
+
   </table>
 </div>
 
