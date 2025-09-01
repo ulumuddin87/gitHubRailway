@@ -17,6 +17,7 @@ def get_db_connection():
         raise Exception("DATABASE_URL tidak ditemukan. Pastikan ada di .env atau di Railway.")
     return psycopg2.connect(database_url)
 
+    conn = psycopg2.connect(os.environ["DATABASE_URL"])
 
 # ================= ROUTES ================= #
 
@@ -209,5 +210,5 @@ def delete_murid(id):
 
 # ✅ Jalankan Flask (untuk Railway, PORT harus diambil dari env)
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+      port = int(os.environ.get("PORT", 5000))
+      app.run(debug=True, host="0.0.0.0", port=port)
