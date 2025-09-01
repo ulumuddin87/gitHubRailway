@@ -145,8 +145,7 @@ def cetak_per_kelas(kelas):
 
     cur.execute("SELECT DISTINCT kelas FROM murid ORDER BY kelas ASC")
     kelas_list = [row[0] for row in cur.fetchall()]
-    cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
-    jilid_list = [row[0] for row in cur.fetchall()]
+   
 
     cur.close()
     conn.close()
@@ -161,8 +160,6 @@ def cetak_per_jilid(jilid):
     cur.execute("SELECT * FROM murid WHERE jilid=%s ORDER BY id ASC", (jilid,))
     murid = cur.fetchall()
 
-    cur.execute("SELECT DISTINCT kelas FROM murid ORDER BY kelas ASC")
-    kelas_list = [row[0] for row in cur.fetchall()]
     cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
     jilid_list = [row[0] for row in cur.fetchall()]
 
