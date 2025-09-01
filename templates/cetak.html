@@ -8,15 +8,9 @@
 
   <style>
     @media print {
-      .no-print {
-        display: none !important;
-      }
-      body {
-        font-size: 12px;
-      }
-      table {
-        font-size: 11px;
-      }
+      .no-print { display: none !important; }
+      body { font-size: 12px; }
+      table { font-size: 11px; }
     }
     .kop-surat {
       text-align: center;
@@ -24,23 +18,13 @@
       padding-bottom: 10px;
       margin-bottom: 20px;
     }
-    .kop-surat h4, .kop-surat p {
-      margin: 0;
-      font-size: 14px;
-    }
-    .table-responsive {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    th, td {
-      white-space: nowrap;
-    }
+    .kop-surat h4, .kop-surat p { margin: 0; font-size: 14px; }
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    th, td { white-space: nowrap; }
   </style>
 
   <script>
-    window.onload = function() {
-      window.print();
-    }
+    window.onload = function() { window.print(); }
   </script>
 </head>
 <body class="p-3">
@@ -55,57 +39,44 @@
   </div>
 
   <!-- Tombol aksi (tidak ikut dicetak) -->
-<div class="mb-3 no-print">
-  <div class="d-flex flex-wrap gap-2 mb-2">
-    <a href="{{ url_for('data_murid') }}" class="btn btn-secondary btn-sm">⬅ Kembali</a>
-    <a href="{{ url_for('cetak_data') }}" class="btn btn-primary btn-sm">🖨 Cetak Semua</a>
-  </div>
-
-  <div class="row">
-    <!-- Cetak per jilid (kiri) -->
-    <div class="col-md-6 mb-2">
-      <div class="d-flex flex-wrap gap-2">
-        {% for j in jilid_list %}
-          <a href="{{ url_for('cetak_per_jilid', jilid=j['jilid']) }}" 
-             class="btn btn-outline-success btn-sm">
-             Cetak Jilid {{ j['jilid'] }}
-          </a>
-        {% endfor %}
-      </div>
+  <div class="mb-3 no-print">
+    <div class="d-flex flex-wrap gap-2 mb-2">
+      <a href="{{ url_for('data_murid') }}" class="btn btn-secondary btn-sm">⬅ Kembali</a>
+      <a href="{{ url_for('cetak_data') }}" class="btn btn-primary btn-sm">🖨 Cetak Semua</a>
     </div>
 
-    <!-- Cetak per kelas (kanan) -->
-    <div class="col-md-6 mb-2 text-md-end">
-      <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-        {% for k in kelas_list %}
-          <a href="{{ url_for('cetak_per_kelas', kelas=k['kelas']) }}" 
-             class="btn btn-outline-primary btn-sm">
-             Cetak Kelas {{ k['kelas'] }}
-          </a>
-        {% endfor %}
+    <div class="row">
+      <!-- Cetak per jilid -->
+      <div class="col-md-6 mb-2">
+        <div class="d-flex flex-wrap gap-2">
+          {% for j in jilid_list %}
+            <a href="{{ url_for('cetak_per_jilid', jilid=j) }}" 
+               class="btn btn-outline-success btn-sm">Cetak Jilid {{ j }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Cetak per kelas -->
+      <div class="col-md-6 mb-2 text-md-end">
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+          {% for k in kelas_list %}
+            <a href="{{ url_for('cetak_per_kelas', kelas=k) }}" 
+               class="btn btn-outline-primary btn-sm">Cetak Kelas {{ k }}</a>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </div>
-</div>
-
 
   <!-- Judul dinamis -->
   <h5 class="text-center mb-3">
-    <u>
-      DATA MURID
-      {% if kelas %} KELAS {{ kelas }}{% endif %}
-      {% if jilid %} JILID {{ jilid }}{% endif %}
-    </u>
+    <u>DATA MURID{% if kelas %} KELAS {{ kelas }}{% endif %}{% if jilid %} JILID {{ jilid }}{% endif %}</u>
   </h5>
 
-
-
-
-  
   <!-- Tabel data murid -->
   <div class="table-responsive">
     <table class="table table-bordered table-sm align-middle">
-      <thead class="table-light">
+      <thead class="table-light text-center">
         <tr>
           <th>ID</th>
           <th>Nama</th>
@@ -117,17 +88,23 @@
         </tr>
       </thead>
       <tbody>
-        {% for m in murid %}
-        <tr>
-          <td>{{ m.id }}</td>
-          <td>{{ m.nama }}</td>
-          <td>{{ m.jilid }}</td>
-          <td>{{ m.kelas }}</td>
-          <td>{{ m.alamat }}</td>
-          <td>{{ m.wali_murid }}</td>
-          <td>{{ m.wali_kelas }}</td>
-        </tr>
-        {% endfor %}
+        {% if murid %}
+          {% for m in murid %}
+            <tr>
+              <td>{{ m.id }}</td>
+              <td>{{ m.nama }}</td>
+              <td>{{ m.jilid }}</td>
+              <td>{{ m.kelas }}</td>
+              <td>{{ m.alamat }}</td>
+              <td>{{ m.wali_murid }}</td>
+              <td>{{ m.wali_kelas }}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="7" class="text-center text-muted">Belum ada data murid.</td>
+          </tr>
+        {% endif %}
       </tbody>
     </table>
   </div>
