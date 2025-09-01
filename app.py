@@ -191,28 +191,26 @@ def cetak_per_jilid(jilid):
     return render_template("cetak.html", murid=murid, kelas_list=kelas_list, jilid_list=jilid_list, jilid=jilid)
 
 
+
 # ================= BIODATA ================= #
+
 @app.route("/biodata/<int:id>", methods=["GET", "POST"])
 def biodata_murid(id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    
-    # Ambil data murid
-    cur.execute("SELECT * FROM murid WHERE id = %s", (id,))
+    cur.execute("SELECT * FROM murid WHERE id=%s", (id,))
     murid = cur.fetchone()
-    
     if not murid:
         cur.close()
         conn.close()
         return "Data murid tidak ditemukan", 404
 
     if request.method == "POST":
-        # Update data murid
         cur.execute("""
             UPDATE murid SET 
-                nama=%s, no_induk=%s, nik=%s, tempat_tanggal_lahir=%s, jenis_kelamin=%s, 
+                nama=%s, no_induk=%s, nik=%s, tempat_tanggal_lahir=%s, jenis_kelamin=%s,
                 status_dalam_keluarga=%s, anak_ke=%s,
-                nama_ayah=%s, no_tlp_ayah=%s, pekerjaan_ayah=%s, 
+                nama_ayah=%s, no_tlp_ayah=%s, pekerjaan_ayah=%s,
                 nama_ibu=%s, no_tlp_ibu=%s, pekerjaan_ibu=%s,
                 dusun=%s, rt=%s, rw=%s, desa=%s, kecamatan=%s, kabupaten_kota=%s, provinsi=%s
             WHERE id=%s
@@ -229,7 +227,7 @@ def biodata_murid(id):
         conn.commit()
         cur.close()
         conn.close()
-        flash("✅ Biodata berhasil disimpan!", "success")
+        flash("✅ Data murid berhasil diperbarui!", "success")
         return redirect(url_for("data_murid"))
 
     cur.close()
@@ -237,6 +235,47 @@ def biodata_murid(id):
     return render_template("biodata_murid.html", murid=murid)
 
 
+# ================= NILAI ================= #
+
+def generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran):
+    return f"Bacaan: {bacaan}, Menulis: {menulis}, Hafalan: {hafalan}, Ahlak: {ahlak}, Kehadiran: {kehadiran}"
+
+@app.route("/nilai/<int:id>", methods=["GET", "POST"])
+def nilai_murid(id):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("SELECT * FROM murid WHERE id=%s", (id,))
+    murid = cur.fetchone()
+    if not murid:
+        cur.close()
+        conn.close()
+        return "Data murid tidak ditemukan", 404
+
+    if request.method == "POST":
+        bacaan = request.form.get("bacaan")
+        menulis = request.form.get("menulis")
+        hafalan = request.form.get("hafalan")
+        ahlak = request.form.get("ahlak")
+        kehadiran = request.form.get("kehadiran")
+        diskripsi = request.form.get("diskripsi")
+        if not diskripsi:
+            diskripsi = generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran)
+
+        cur.execute("""
+            UPDATE murid SET 
+                nilai_bacaan=%s, nilai_menulis=%s, nilai_hafalan=%s, nilai_ahlak=%s,
+                nilai_kehadiran=%s, diskripsi=%s
+            WHERE id=%s
+        """, (bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi, id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash("✅ Nilai berhasil disimpan!", "success")
+        return redirect(url_for("data_murid"))
+
+    cur.close()
+    conn.close()
+    return render_template("nilai_murid.html", murid=murid)
 
 # ================= RUN ================= #
 
