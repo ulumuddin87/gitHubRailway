@@ -190,6 +190,54 @@ def cetak_per_jilid(jilid):
     conn.close()
     return render_template("cetak.html", murid=murid, kelas_list=kelas_list, jilid_list=jilid_list, jilid=jilid)
 
+
+# ================= BIODATA ================= #
+@app.route("/biodata/<int:id>", methods=["GET", "POST"])
+def biodata_murid(id):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    # Ambil data murid
+    cur.execute("SELECT * FROM murid WHERE id = %s", (id,))
+    murid = cur.fetchone()
+    
+    if not murid:
+        cur.close()
+        conn.close()
+        return "Data murid tidak ditemukan", 404
+
+    if request.method == "POST":
+        # Update data murid
+        cur.execute("""
+            UPDATE murid SET 
+                nama=%s, no_induk=%s, nik=%s, tempat_tanggal_lahir=%s, jenis_kelamin=%s, 
+                status_dalam_keluarga=%s, anak_ke=%s,
+                nama_ayah=%s, no_tlp_ayah=%s, pekerjaan_ayah=%s, 
+                nama_ibu=%s, no_tlp_ibu=%s, pekerjaan_ibu=%s,
+                dusun=%s, rt=%s, rw=%s, desa=%s, kecamatan=%s, kabupaten_kota=%s, provinsi=%s
+            WHERE id=%s
+        """, (
+            request.form.get("nama"), request.form.get("no_induk"), request.form.get("nik"),
+            request.form.get("tempat_tanggal_lahir"), request.form.get("jenis_kelamin"),
+            request.form.get("status_dalam_keluarga"), request.form.get("anak_ke") or None,
+            request.form.get("nama_ayah"), request.form.get("no_tlp_ayah"), request.form.get("pekerjaan_ayah"),
+            request.form.get("nama_ibu"), request.form.get("no_tlp_ibu"), request.form.get("pekerjaan_ibu"),
+            request.form.get("dusun"), request.form.get("rt"), request.form.get("rw"),
+            request.form.get("desa"), request.form.get("kecamatan"), request.form.get("kabupaten_kota"),
+            request.form.get("provinsi"), id
+        ))
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash("✅ Biodata berhasil disimpan!", "success")
+        return redirect(url_for("data_murid"))
+
+    cur.close()
+    conn.close()
+    return render_template("biodata_murid.html", murid=murid)
+
+
+
 # ================= RUN ================= #
 
 if __name__ == "__main__":
