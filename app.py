@@ -38,7 +38,6 @@ def logout():
     return redirect(url_for("login"))
 
 # ================= MURID ================= #
-
 @app.route("/murid")
 def data_murid():
     if not session.get("user"):
@@ -49,16 +48,18 @@ def data_murid():
     cur.execute("SELECT * FROM murid ORDER BY id ASC")
     murid = cur.fetchall()
 
-    # Ambil daftar kelas & jilid unik
     cur.execute("SELECT DISTINCT kelas FROM murid ORDER BY kelas ASC")
-    kelas_list = [row[0] for row in cur.fetchall()]
+    kelas_list = [row['kelas'] for row in cur.fetchall()]  # <-- pastikan ambil value saja
 
     cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
-    jilid_list = [row[0] for row in cur.fetchall()]
+    jilid_list = [row['jilid'] for row in cur.fetchall()]  # <-- pastikan ambil value saja
 
     cur.close()
     conn.close()
     return render_template("data_murid.html", murid=murid, kelas_list=kelas_list, jilid_list=jilid_list)
+
+
+
 
 @app.route("/add", methods=["GET", "POST"])
 def add_murid():
