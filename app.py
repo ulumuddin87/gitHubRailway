@@ -4,25 +4,18 @@ import csv, io
 from fpdf import FPDF
 import os
 
+from dotenv import load_dotenv
+
+# Load environment dari file .env
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "rahasia_tpq")  # ✅ lebih aman
 
-# 🔹 Koneksi ke PostgreSQL (DATABASE_URL dari Railway)
 def get_db_connection():
-    DATABASE_URL = os.environ.get("DATABASE_URL")
-    if not DATABASE_URL:
-        raise Exception("DATABASE_URL tidak ditemukan. Pastikan sudah di-set di Railway.")
-
-    # Railway kadang kasih postgres:// → harus diubah ke postgresql://
-    if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
-    # Kalau jalan di Railway (internal), SSL tidak perlu
-    # Kalau pakai external DB (supabase/amazonaws) → pakai sslmode=require
-    sslmode = "require" if "amazonaws" in DATABASE_URL else "disable"
-
-    conn = psycopg2.connect(DATABASE_URL, sslmode=sslmode)
-    return conn
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        raise Exception("DATABASE_URL tidak ditemukan. Pastikan ada di .env atau di Railway.")
+    return psycopg2.connect(database_url)
 
 
 # ================= ROUTES ================= #
