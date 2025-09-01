@@ -3,8 +3,8 @@ import psycopg2, psycopg2.extras
 import csv, io
 from fpdf import FPDF
 import os
-
 from dotenv import load_dotenv
+load_dotenv()
 
 # Load environment dari file .env
 load_dotenv()
