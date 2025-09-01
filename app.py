@@ -1,12 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import psycopg2, psycopg2.extras
 import os
 from dotenv import load_dotenv
 
+# Load environment dari file .env
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "rahasia_tpq")  # penting untuk session
+app.secret_key = os.getenv("SECRET_KEY", "rahasia_tpq")  # 🔑 penting untuk session
 
 def get_db_connection():
     database_url = os.getenv("DATABASE_URL")
@@ -37,7 +38,15 @@ def logout():
     session.pop("user", None)
     return redirect(url_for("login"))
 
+# Debug route → cek env
+@app.route("/debug/env")
+def debug_env():
+    keys = ["DATABASE_URL", "PGURL", "RAILWAY_DATABASE_URL"]
+    env_data = {k: os.getenv(k) for k in keys}
+    return jsonify(env_data)
+
 # ================= MURID ================= #
+
 @app.route("/murid")
 def data_murid():
     if not session.get("user"):
@@ -45,21 +54,24 @@ def data_murid():
 
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Ambil semua murid
     cur.execute("SELECT * FROM murid ORDER BY id ASC")
     murid = cur.fetchall()
 
+    # Ambil daftar kelas unik
     cur.execute("SELECT DISTINCT kelas FROM murid ORDER BY kelas ASC")
-    kelas_list = [row['kelas'] for row in cur.fetchall()]  # <-- pastikan ambil value saja
+    kelas_list = [row['kelas'] for row in cur.fetchall()]
 
+    # Ambil daftar jilid unik
     cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
-    jilid_list = [row['jilid'] for row in cur.fetchall()]  # <-- pastikan ambil value saja
+    jilid_list = [row['jilid'] for row in cur.fetchall()]
 
     cur.close()
     conn.close()
     return render_template("data_murid.html", murid=murid, kelas_list=kelas_list, jilid_list=jilid_list)
 
-
-
+# ================= CRUD ================= #
 
 @app.route("/add", methods=["GET", "POST"])
 def add_murid():
@@ -67,7 +79,7 @@ def add_murid():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            INSERT INTO murid (nama, jilid, kelas, alamat, wali_murid, wali_kelas)
+            INSERT INTO murid (nama, jilid, kelas, alamat, wali_murid, wali_kelas) 
             VALUES (%s,%s,%s,%s,%s,%s)
         """, (
             request.form["nama"], request.form["jilid"], request.form["kelas"], 
@@ -88,10 +100,10 @@ def edit_murid(id):
 
     if request.method == "POST":
         cur.execute("""
-            UPDATE murid SET nama=%s, jilid=%s, kelas=%s, alamat=%s, wali_murid=%s, wali_kelas=%s
+            UPDATE murid SET nama=%s, jilid=%s, kelas=%s, alamat=%s, wali_murid=%s, wali_kelas=%s 
             WHERE id=%s
         """, (
-            request.form["nama"], request.form["jilid"], request.form["kelas"],
+            request.form["nama"], request.form["jilid"], request.form["kelas"], 
             request.form["alamat"], request.form["wali_murid"], request.form["wali_kelas"], id
         ))
         conn.commit()
@@ -122,13 +134,15 @@ def cetak_data():
 
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
     cur.execute("SELECT * FROM murid ORDER BY id ASC")
     murid = cur.fetchall()
 
     cur.execute("SELECT DISTINCT kelas FROM murid ORDER BY kelas ASC")
-    kelas_list = [row[0] for row in cur.fetchall()]
+    kelas_list = [row['kelas'] for row in cur.fetchall()]
+
     cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
-    jilid_list = [row[0] for row in cur.fetchall()]
+    jilid_list = [row['jilid'] for row in cur.fetchall()]
 
     cur.close()
     conn.close()
@@ -138,14 +152,18 @@ def cetak_data():
 def cetak_per_kelas(kelas):
     if not session.get("user"):
         return redirect(url_for("login"))
+
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
     cur.execute("SELECT * FROM murid WHERE kelas=%s ORDER BY id ASC", (kelas,))
     murid = cur.fetchall()
 
     cur.execute("SELECT DISTINCT kelas FROM murid ORDER BY kelas ASC")
-    kelas_list = [row[0] for row in cur.fetchall()]
-   
+    kelas_list = [row['kelas'] for row in cur.fetchall()]
+
+    cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
+    jilid_list = [row['jilid'] for row in cur.fetchall()]
 
     cur.close()
     conn.close()
@@ -155,19 +173,25 @@ def cetak_per_kelas(kelas):
 def cetak_per_jilid(jilid):
     if not session.get("user"):
         return redirect(url_for("login"))
+
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
     cur.execute("SELECT * FROM murid WHERE jilid=%s ORDER BY id ASC", (jilid,))
     murid = cur.fetchall()
 
+    cur.execute("SELECT DISTINCT kelas FROM murid ORDER BY kelas ASC")
+    kelas_list = [row['kelas'] for row in cur.fetchall()]
+
     cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
-    jilid_list = [row[0] for row in cur.fetchall()]
+    jilid_list = [row['jilid'] for row in cur.fetchall()]
 
     cur.close()
     conn.close()
     return render_template("cetak.html", murid=murid, kelas_list=kelas_list, jilid_list=jilid_list, jilid=jilid)
 
 # ================= RUN ================= #
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host="0.0.0.0", port=port)

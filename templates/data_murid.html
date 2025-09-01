@@ -2,35 +2,15 @@
 {% block title %}Data Murid{% endblock %}
 {% block content %}
 
-<!-- Header + Tombol -->
 <div class="sticky-top bg-white pb-2 pt-2 mb-2 border-bottom">
   <h3 class="mb-2">Data Murid</h3>
   <div class="d-flex flex-wrap gap-2">
     <a href="{{ url_for('add_murid') }}" class="btn btn-success btn-sm flex-fill">Tambah Murid</a>
     <a href="{{ url_for('cetak_data') }}" class="btn btn-primary btn-sm flex-fill">Cetak Semua</a>
   </div>
-
-  <!-- Filter Kelas (opsional) -->
-  <div class="mt-2 d-flex flex-wrap gap-2">
-    {% for k in kelas_list %}
-      <a href="{{ url_for('cetak_per_kelas', kelas=k) }}" class="btn btn-outline-primary btn-sm">
-        Cetak Kelas {{ k }}
-      </a>
-    {% endfor %}
-  </div>
-
-  <!-- Filter Jilid (opsional) -->
-  <div class="mt-2 d-flex flex-wrap gap-2">
-    {% for j in jilid_list %}
-      <a href="{{ url_for('cetak_per_jilid', jilid=j) }}" class="btn btn-outline-success btn-sm">
-        Cetak Jilid {{ j }}
-      </a>
-    {% endfor %}
-  </div>
 </div>
 
-<!-- Tabel -->
-<div class="table-responsive mt-2">
+<div class="table-responsive">
   <table class="table table-bordered table-striped align-middle">
     <thead class="table-dark text-center">
       <tr>
@@ -45,30 +25,22 @@
       </tr>
     </thead>
     <tbody>
-      {% if murid %}
-        {% for m in murid %}
-        <tr>
-          <td>{{ m.id }}</td>
-          <td>{{ m.nama }}</td>
-          <td>{{ m.jilid }}</td>
-          <td>{{ m.kelas }}</td>
-          <td>{{ m.alamat }}</td>
-          <td>{{ m.wali_murid }}</td>
-          <td>{{ m.wali_kelas }}</td>
-          <td class="text-nowrap">
-            <a href="{{ url_for('edit_murid', id=m.id) }}" class="btn btn-sm btn-info">Edit</a>
-            <a href="{{ url_for('delete_murid', id=m.id) }}" class="btn btn-sm btn-danger" 
-               onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</a>
-            <a href="{{ url_for('biodata_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Biodata</a>
-            <a href="{{ url_for('nilai_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Nilai</a>
-          </td>
-        </tr>
-        {% endfor %}
-      {% else %}
-        <tr>
-          <td colspan="8" class="text-center text-muted">Belum ada data murid.</td>
-        </tr>
-      {% endif %}
+      {% for m in murid %}
+      <tr>
+        <td>{{ m.id }}</td>
+        <td>{{ m.nama }}</td>
+        <td>{{ m.jilid }}</td>
+        <td>{{ m.kelas }}</td>
+        <td>{{ m.alamat }}</td>
+        <td>{{ m.wali_murid }}</td>
+        <td>{{ m.wali_kelas }}</td>
+        <td class="text-nowrap">
+          <a href="{{ url_for('edit_murid', id=m.id) }}" class="btn btn-sm btn-info">Edit</a>
+          <a href="{{ url_for('delete_murid', id=m.id) }}" class="btn btn-sm btn-danger"
+             onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</a>
+        </td>
+      </tr>
+      {% endfor %}
     </tbody>
   </table>
 </div>
