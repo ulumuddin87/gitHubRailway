@@ -13,9 +13,10 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "rahasia_tpq")  # 🔑 penting untuk session
 def get_db_connection():
     database_url = os.getenv("DATABASE_URL")
-    if not database_url:
-        raise Exception("DATABASE_URL tidak ditemukan. Pastikan ada di .env atau di Railway.")
     return psycopg2.connect(database_url)
+    
+
+    
 
 # ================= ROUTES ================= #
 
