@@ -72,4 +72,19 @@
   </table>
 </div>
 
+
+<script>
+  // Pencarian real-time
+  const searchInput = document.getElementById('searchInput');
+  const table = document.getElementById('muridTable').getElementsByTagName('tbody')[0];
+
+  searchInput.addEventListener('keyup', function() {
+    const filter = this.value.toLowerCase();
+    for (let row of table.rows) {
+      let text = row.textContent.toLowerCase();
+      row.style.display = text.includes(filter) ? '' : 'none';
+    }
+  });
+</script>
+
 {% endblock %}
