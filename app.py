@@ -51,6 +51,11 @@ def debug_env():
 def data_murid():
     if not session.get("user"):
         return redirect(url_for("login"))
+    
+    search = request.args.get("q", "")
+    filter_kelas = request.args.get("kelas", "")
+    filter_jilid = request.args.get("jilid", "")
+
 
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -67,9 +72,36 @@ def data_murid():
     cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
     jilid_list = [row['jilid'] for row in cur.fetchall()]
 
+    query = "SELECT * FROM murid WHERE 1=1"
+    params = []
+
+    if search:
+        query += " AND nama ILIKE %s"
+        params.append(f"%{search}%")
+    if filter_kelas:
+        query += " AND kelas=%s"
+        params.append(filter_kelas)
+    if filter_jilid:
+        query += " AND jilid=%s"
+        params.append(filter_jilid)
+
+    query += " ORDER BY id ASC"
+    cur.execute(query, tuple(params))
+    murid = cur.fetchall()
+
+    # Ambil daftar kelas & jilid unik untuk filter dropdown
+    cur.execute("SELECT DISTINCT kelas FROM murid ORDER BY kelas ASC")
+    kelas_list = cur.fetchall()
+    cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
+    jilid_list = cur.fetchall()
+    
     cur.close()
     conn.close()
-    return render_template("data_murid.html", murid=murid, kelas_list=kelas_list, jilid_list=jilid_list)
+    return render_template(
+        "data_murid.html", murid=murid, kelas_list=kelas_list, jilid_list=jilid_list,
+        search=search, filter_kelas=filter_kelas, filter_jilid=filter_jilid
+    )
+
 
 # ================= CRUD ================= #
 
@@ -125,8 +157,9 @@ def delete_murid(id):
     conn.close()
     return redirect(url_for("data_murid"))
 
-# ================= CETAK ================= #
 
+
+# ================= CETAK ================= #
 @app.route("/cetak_data")
 def cetak_data():
     if not session.get("user"):
