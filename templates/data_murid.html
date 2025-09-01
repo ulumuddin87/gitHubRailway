@@ -10,7 +10,6 @@
     <a href="{{ url_for('cetak_data') }}" class="btn btn-primary btn-sm flex-fill">Cetak Semua</a>
     <a href="{{ url_for('export_csv') }}" class="btn btn-warning btn-sm flex-fill">Export CSV</a>
     <a href="{{ url_for('export_pdf') }}" class="btn btn-danger btn-sm flex-fill">Export PDF</a>
-
   </div>
 </div>
 
@@ -21,7 +20,7 @@
       <tr>
         <th>ID</th>
         <th>Nama</th>
-        <th>jilid</th>
+        <th>Jilid</th>
         <th>Kelas</th>
         <th>Alamat</th>
         <th>Wali Murid</th>
@@ -30,27 +29,32 @@
       </tr>
     </thead>
     <tbody>
-      {% for m in murid %}
-      <tr>
-        <td>{{ m.id }}</td>
-        <td>{{ m.nama }}</td>
-        <td>{{ m.jilid }}</td>
-        <td>{{ m.kelas }}</td>
-        <td>{{ m.alamat }}</td>
-        <td>{{ m.wali_murid }}</td>
-        <td>{{ m.wali_kelas }}</td>
-        <td class="text-nowrap">
-          <a href="{{ url_for('edit_murid', id=m.id) }}" class="btn btn-sm btn-info">Edit</a>
-          <a href="{{ url_for('delete_murid', id=m.id) }}" class="btn btn-sm btn-danger"
-             onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</a>
-          <a href="{{ url_for('biodata_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Biodata</a>
-          <a href="{{ url_for('nilai_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Nilai</a>
-       </td>
-      </tr>
-      {% endfor %}
+      {% if murid %}
+        {% for m in murid %}
+        <tr>
+          <td>{{ m.id if m.id is defined else m[0] }}</td>
+          <td>{{ m.nama if m.nama is defined else m[1] }}</td>
+          <td>{{ m.jilid if m.jilid is defined else m[2] }}</td>
+          <td>{{ m.kelas if m.kelas is defined else m[3] }}</td>
+          <td>{{ m.alamat if m.alamat is defined else m[4] }}</td>
+          <td>{{ m.wali_murid if m.wali_murid is defined else m[5] }}</td>
+          <td>{{ m.wali_kelas if m.wali_kelas is defined else m[6] }}</td>
+          <td class="text-nowrap">
+            <a href="{{ url_for('edit_murid', id=m.id if m.id is defined else m[0]) }}" class="btn btn-sm btn-info">Edit</a>
+            <a href="{{ url_for('delete_murid', id=m.id if m.id is defined else m[0]) }}" class="btn btn-sm btn-danger"
+               onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</a>
+            <a href="{{ url_for('biodata_murid', id=m.id if m.id is defined else m[0]) }}" class="btn btn-sm btn-secondary">Biodata</a>
+            <a href="{{ url_for('nilai_murid', id=m.id if m.id is defined else m[0]) }}" class="btn btn-sm btn-secondary">Nilai</a>
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="8" class="text-center text-muted">Belum ada data murid.</td>
+        </tr>
+      {% endif %}
     </tbody>
   </table>
 </div>
 
 {% endblock %}
-
