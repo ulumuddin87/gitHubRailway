@@ -171,6 +171,73 @@ def add_murid():
     return render_template("add_murid.html")
 
 
+# ================= CETAK ================= #
+
+@app.route("/cetak_data")
+def cetak_data():
+    if not session.get("user"):
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    # Ambil semua murid
+    cur.execute("SELECT * FROM murid ORDER BY id ASC")
+    murid = cur.fetchall()
+
+    # Ambil daftar kelas dan jilid unik
+    cur.execute("SELECT DISTINCT kelas FROM murid ORDER BY kelas ASC")
+    kelas_list = cur.fetchall()
+
+    cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
+    jilid_list = cur.fetchall()
+
+    cur.close()
+    conn.close()
+    return render_template("cetak.html", murid=murid, kelas_list=kelas_list, jilid_list=jilid_list)
+
+
+
+@app.route("/cetak/kelas/<kelas>")
+def cetak_per_kelas(kelas):
+    if not session.get("user"):
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("SELECT * FROM murid WHERE kelas=%s ORDER BY id ASC", (kelas,))
+    murid = cur.fetchall()
+
+    cur.execute("SELECT DISTINCT kelas FROM murid ORDER BY kelas ASC")
+    kelas_list = cur.fetchall()
+    cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
+    jilid_list = cur.fetchall()
+
+    cur.close()
+    conn.close()
+    return render_template("cetak.html", murid=murid, kelas_list=kelas_list, jilid_list=jilid_list, kelas=kelas)
+
+
+@app.route("/cetak/jilid/<jilid>")
+def cetak_per_jilid(jilid):
+    if not session.get("user"):
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("SELECT * FROM murid WHERE jilid=%s ORDER BY id ASC", (jilid,))
+    murid = cur.fetchall()
+
+    cur.execute("SELECT DISTINCT kelas FROM murid ORDER BY kelas ASC")
+    kelas_list = cur.fetchall()
+    cur.execute("SELECT DISTINCT jilid FROM murid ORDER BY jilid ASC")
+    jilid_list = cur.fetchall()
+
+    cur.close()
+    conn.close()
+    return render_template("cetak.html", murid=murid, kelas_list=kelas_list, jilid_list=jilid_list, jilid=jilid)
+
+
+
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
 def edit_murid(id):
     conn = get_db_connection()
