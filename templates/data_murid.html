@@ -65,16 +65,11 @@
              onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</a>
           <a href="{{ url_for('biodata_murid', id=m.id) }}" class="btn btn-sm btn-primary">Biodata</a>
           <a href="{{ url_for('nilai_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Nilai</a>
-</td>
-
         </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
-
-
-
 
 {% endblock %}
