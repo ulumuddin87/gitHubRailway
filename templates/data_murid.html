@@ -5,23 +5,36 @@
 <!-- Header + Tombol -->
 <div class="sticky-top bg-white pb-2 pt-2 mb-2 border-bottom">
   <h3 class="mb-2">Data Murid</h3>
+
+  <!-- Filter Kelas -->
+  <form method="get" class="mb-2 d-flex gap-2 flex-wrap">
+    <select name="kelas" class="form-select form-select-sm w-auto">
+      <option value="">-- Semua Kelas --</option>
+      {% for k in kelas_list %}
+        {% set kelas_name = k.kelas if k.kelas is defined else k[0] %}
+        <option value="{{ kelas_name }}" {% if request.args.get('kelas') == kelas_name %}selected{% endif %}>{{ kelas_name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+  </form>
+
+  <!-- Tombol aksi -->
   <div class="d-flex flex-wrap gap-2">
     <a href="{{ url_for('add_murid') }}" class="btn btn-success btn-sm flex-fill">Tambah Murid</a>
     <a href="{{ url_for('cetak_data') }}" class="btn btn-primary btn-sm flex-fill">Cetak Semua</a>
     <a href="{{ url_for('export_csv') }}" class="btn btn-warning btn-sm flex-fill">Export CSV</a>
     <a href="{{ url_for('export_pdf') }}" class="btn btn-danger btn-sm flex-fill">Export PDF</a>
-
   </div>
 </div>
 
 <!-- Tabel -->
-<div class="table-responsive">
+<div class="table-responsive mt-2">
   <table class="table table-bordered table-striped align-middle">
     <thead class="table-dark text-center">
       <tr>
         <th>ID</th>
         <th>Nama</th>
-        <th>jilid</th>
+        <th>Jilid</th>
         <th>Kelas</th>
         <th>Alamat</th>
         <th>Wali Murid</th>
@@ -30,27 +43,36 @@
       </tr>
     </thead>
     <tbody>
-      {% for m in murid %}
-      <tr>
-        <td>{{ m.id }}</td>
-        <td>{{ m.nama }}</td>
-        <td>{{ m.jilid }}</td>
-        <td>{{ m.kelas }}</td>
-        <td>{{ m.alamat }}</td>
-        <td>{{ m.wali_murid }}</td>
-        <td>{{ m.wali_kelas }}</td>
-        <td class="text-nowrap">
-          <a href="{{ url_for('edit_murid', id=m.id) }}" class="btn btn-sm btn-info">Edit</a>
-          <a href="{{ url_for('delete_murid', id=m.id) }}" class="btn btn-sm btn-danger"
-             onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</a>
-          <a href="{{ url_for('biodata_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Biodata</a>
-          <a href="{{ url_for('nilai_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Nilai</a>
-       </td>
-      </tr>
-      {% endfor %}
+      {% if murid %}
+        {% for m in murid %}
+        <tr>
+          <td>{{ m.id if m.id is defined else m[0] }}</td>
+          <td>{{ m.nama if m.nama is defined else m[1] }}</td>
+          <td>{{ m.jilid if m.jilid is defined else m[2] }}</td>
+          <td>{{ m.kelas if m.kelas is defined else m[3] }}</td>
+          <td>{{ m.alamat if m.alamat is defined else m[4] }}</td>
+          <td>{{ m.wali_murid if m.wali_murid is defined else m[5] }}</td>
+          <td>{{ m.wali_kelas if m.wali_kelas is defined else m[6] }}</td>
+          <td class="text-nowrap">
+            <a href="{{ url_for('edit_murid', id=m.id if m.id is defined else m[0]) }}" class="btn btn-sm btn-info">Edit</a>
+            <a href="{{ url_for('delete_murid', id=m.id if m.id is defined else m[0]) }}" class="btn btn-sm btn-danger"
+               onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</a>
+            <a href="{{ url_for('biodata_murid', id=m.id if m.id is defined else m[0]) }}" class="btn btn-sm btn-secondary">Biodata</a>
+
+            <!-- Tombol Nilai sebagai POST -->
+            <form action="{{ url_for('nilai_murid', id=m.id if m.id is defined else m[0]) }}" method="post" style="display:inline;">
+              <button type="submit" class="btn btn-sm btn-secondary">Nilai</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="8" class="text-center text-muted">Belum ada data murid.</td>
+        </tr>
+      {% endif %}
     </tbody>
   </table>
 </div>
 
 {% endblock %}
-
