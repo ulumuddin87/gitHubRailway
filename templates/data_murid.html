@@ -80,22 +80,6 @@
   {% endif %}
 </td>
 
-cur.execute("""
-    SELECT m.id, m.nama, m.kelas, m.jilid, m.alamat, m.wali_murid, m.wali_kelas,
-           n.nilai_bacaan, n.nilai_menulis, n.nilai_hafalan, n.nilai_ahlak, n.nilai_kehadiran
-    FROM murid m
-    LEFT JOIN (
-        SELECT murid_id, 
-               MAX(created_at) as latest
-        FROM nilai
-        GROUP BY murid_id
-    ) ln ON m.id = ln.murid_id
-    LEFT JOIN nilai n ON m.id = n.murid_id AND n.created_at = ln.latest
-    WHERE m.nama LIKE ? 
-      AND (? = '' OR m.kelas = ?)
-      AND (? = '' OR m.jilid = ?)
-    ORDER BY m.id DESC
-""", (f"%{search}%", filter_kelas, filter_kelas, filter_jilid, filter_jilid))
 
 
 

@@ -269,25 +269,20 @@ def biodata_murid(id):
 
 
 # ================= NILAI ================= #
+
 def generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran):
     return f"Bacaan: {bacaan}, Menulis: {menulis}, Hafalan: {hafalan}, Ahlak: {ahlak}, Kehadiran: {kehadiran}"
 
-@app.route("/nilai/<int:murid_id>/<int:jilid>", methods=["GET", "POST"])
-def nilai_murid(murid_id, jilid):
+@app.route("/nilai/<int:id>", methods=["GET", "POST"])
+def nilai_murid(id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
-    # Ambil data murid
-    cur.execute("SELECT * FROM murid WHERE id=%s", (murid_id,))
+    cur.execute("SELECT * FROM murid WHERE id=%s", (id,))
     murid = cur.fetchone()
     if not murid:
         cur.close()
         conn.close()
         return "Data murid tidak ditemukan", 404
-
-    # Ambil nilai berdasarkan murid_id & jilid
-    cur.execute("SELECT * FROM nilai WHERE murid_id=%s AND jilid=%s", (murid_id, jilid))
-    nilai = cur.fetchone()
 
     if request.method == "POST":
         bacaan = request.form.get("bacaan")
@@ -296,36 +291,24 @@ def nilai_murid(murid_id, jilid):
         ahlak = request.form.get("ahlak")
         kehadiran = request.form.get("kehadiran")
         diskripsi = request.form.get("diskripsi")
-
         if not diskripsi:
             diskripsi = generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran)
 
-        if nilai:  
-            # UPDATE jika nilai sudah ada
-            cur.execute("""
-                UPDATE nilai
-                SET nilai_bacaan=%s, nilai_menulis=%s, nilai_hafalan=%s, nilai_ahlak=%s,
-                    nilai_kehadiran=%s, diskripsi=%s
-                WHERE murid_id=%s AND jilid=%s
-            """, (bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi, murid_id, jilid))
-        else:
-            # INSERT jika nilai belum ada
-            cur.execute("""
-                INSERT INTO nilai (murid_id, jilid, nilai_bacaan, nilai_menulis, nilai_hafalan,
-                                   nilai_ahlak, nilai_kehadiran, diskripsi)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-            """, (murid_id, jilid, bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi))
-
+        cur.execute("""
+            UPDATE murid SET 
+                nilai_bacaan=%s, nilai_menulis=%s, nilai_hafalan=%s, nilai_ahlak=%s,
+                nilai_kehadiran=%s, diskripsi=%s
+            WHERE id=%s
+        """, (bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi, id))
         conn.commit()
-        flash("✅ Nilai berhasil disimpan!", "success")
         cur.close()
         conn.close()
-        return redirect(url_for("nilai_murid", murid_id=murid_id, jilid=jilid))
+        flash("✅ Nilai berhasil disimpan!", "success")
+        return redirect(url_for("data_murid"))
 
     cur.close()
     conn.close()
-    return render_template("nilai_murid.html", murid=murid, nilai=nilai, jilid=jilid)
-
+    return render_template("nilai_murid.html", murid=murid)
 
 # ================= RUN ================= #
 
