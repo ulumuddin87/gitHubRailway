@@ -4,42 +4,57 @@
 
 <div class="card shadow-sm">
   <div class="card-header bg-success text-white">
-    <h5 class="mb-0">Input Nilai Murid</h5>
+    <h5 class="mb-0">Nilai Murid - Jilid {{ jilid }}</h5>
   </div>
   <div class="card-body">
     <ul>
-      <li><b>Nama:</b> {{ murid['nama'] }}</li>
-      <li><b>Kelas:</b> {{ murid['kelas'] }}</li>
-      <li><b>Jilid:</b> {{ murid['jilid'] }}</li>
-      <li><b>Wali Kelas:</b> {{ murid['wali_kelas'] }}</li>
+      <li><b>Nama:</b> {{ murid.nama }}</li>
+      <li><b>Kelas:</b> {{ murid.kelas }}</li>
+      <li><b>Jilid Aktif:</b> {{ murid.jilid }}</li>
+      <li><b>Wali Kelas:</b> {{ murid.wali_kelas }}</li>
     </ul>
+
+    <!-- Navigasi Jilid -->
+    <div class="mb-3">
+      {% for j in range(1, 8) %}
+        <a href="{{ url_for('nilai_murid', murid_id=murid.id, jilid=j) }}"
+           class="btn {% if j == jilid %}btn-success{% else %}btn-outline-success{% endif %} btn-sm">
+           Jilid {{ j }}
+        </a>
+      {% endfor %}
+    </div>
 
     <form method="POST">
       <div class="row g-3">
         <div class="col-md-6">
           <label class="form-label">Nilai Membaca</label>
-          <input type="number" name="bacaan" class="form-control" value="{{ murid['nilai_bacaan'] or '' }}">
+          <input type="number" name="bacaan" class="form-control" 
+                 value="{{ nilai.nilai_bacaan if nilai else '' }}">
         </div>
         <div class="col-md-6">
           <label class="form-label">Nilai Menulis</label>
-          <input type="number" name="menulis" class="form-control" value="{{ murid['nilai_menulis'] or '' }}">
+          <input type="number" name="menulis" class="form-control" 
+                 value="{{ nilai.nilai_menulis if nilai else '' }}">
         </div>
         <div class="col-md-6">
           <label class="form-label">Nilai Hafalan</label>
-          <input type="number" name="hafalan" class="form-control" value="{{ murid['nilai_hafalan'] or '' }}">
+          <input type="number" name="hafalan" class="form-control" 
+                 value="{{ nilai.nilai_hafalan if nilai else '' }}">
         </div>
         <div class="col-md-6">
           <label class="form-label">Nilai Ahlak</label>
-          <input type="number" name="ahlak" class="form-control" value="{{ murid['nilai_ahlak'] or '' }}">
+          <input type="number" name="ahlak" class="form-control" 
+                 value="{{ nilai.nilai_ahlak if nilai else '' }}">
         </div>
         <div class="col-md-6">
           <label class="form-label">Nilai Kehadiran</label>
-          <input type="number" name="kehadiran" class="form-control" value="{{ murid['nilai_kehadiran'] or '' }}">
+          <input type="number" name="kehadiran" class="form-control" 
+                 value="{{ nilai.nilai_kehadiran if nilai else '' }}">
         </div>
         <div class="col-12">
           <label class="form-label">Diskripsi</label>
           <textarea name="diskripsi" rows="5" class="form-control"
-            placeholder="Otomatis terisi bila dikosongkan">{{ murid['diskripsi'] or '' }}</textarea>
+            placeholder="Otomatis terisi bila dikosongkan">{{ nilai.diskripsi if nilai else '' }}</textarea>
           <div class="form-text">Kosongkan bila ingin deskripsi otomatis berdasarkan nilai per-aspek.</div>
         </div>
       </div>
