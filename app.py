@@ -268,8 +268,7 @@ def biodata_murid(id):
     return render_template("biodata_murid.html", murid=murid)
 
 
-# ================= NILAI PER JILID ================= #
-
+# ================= NILAI ================= #
 def generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran):
     return f"Bacaan: {bacaan}, Menulis: {menulis}, Hafalan: {hafalan}, Ahlak: {ahlak}, Kehadiran: {kehadiran}"
 
@@ -278,7 +277,7 @@ def nilai_murid(murid_id, jilid):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # ambil data murid
+    # Ambil data murid
     cur.execute("SELECT * FROM murid WHERE id=%s", (murid_id,))
     murid = cur.fetchone()
     if not murid:
@@ -286,7 +285,7 @@ def nilai_murid(murid_id, jilid):
         conn.close()
         return "Data murid tidak ditemukan", 404
 
-    # ambil nilai jilid
+    # Ambil nilai berdasarkan murid_id & jilid
     cur.execute("SELECT * FROM nilai WHERE murid_id=%s AND jilid=%s", (murid_id, jilid))
     nilai = cur.fetchone()
 
@@ -297,26 +296,30 @@ def nilai_murid(murid_id, jilid):
         ahlak = request.form.get("ahlak")
         kehadiran = request.form.get("kehadiran")
         diskripsi = request.form.get("diskripsi")
+
         if not diskripsi:
             diskripsi = generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran)
 
-        if nilai:  # UPDATE kalau sudah ada
+        if nilai:  
+            # UPDATE jika nilai sudah ada
             cur.execute("""
-                UPDATE nilai SET 
-                    nilai_bacaan=%s, nilai_menulis=%s, nilai_hafalan=%s, nilai_ahlak=%s,
+                UPDATE nilai
+                SET nilai_bacaan=%s, nilai_menulis=%s, nilai_hafalan=%s, nilai_ahlak=%s,
                     nilai_kehadiran=%s, diskripsi=%s
                 WHERE murid_id=%s AND jilid=%s
             """, (bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi, murid_id, jilid))
-        else:  # INSERT kalau belum ada
+        else:
+            # INSERT jika nilai belum ada
             cur.execute("""
-                INSERT INTO nilai (murid_id, jilid, nilai_bacaan, nilai_menulis, nilai_hafalan, nilai_ahlak, nilai_kehadiran, diskripsi)
+                INSERT INTO nilai (murid_id, jilid, nilai_bacaan, nilai_menulis, nilai_hafalan,
+                                   nilai_ahlak, nilai_kehadiran, diskripsi)
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
             """, (murid_id, jilid, bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi))
 
         conn.commit()
+        flash("✅ Nilai berhasil disimpan!", "success")
         cur.close()
         conn.close()
-        flash(f"✅ Nilai Jilid {jilid} berhasil disimpan!", "success")
         return redirect(url_for("nilai_murid", murid_id=murid_id, jilid=jilid))
 
     cur.close()
