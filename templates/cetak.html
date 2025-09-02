@@ -26,6 +26,32 @@
   <a href="{{ url_for('data_murid') }}" class="btn btn-secondary btn-sm">⬅ Kembali</a>
 </div>
 
+<!-- Form Pencarian & Filter -->
+<form method="GET" class="row g-2 mb-3">
+  <div class="col-md-4">
+    <input type="text" name="q" class="form-control" placeholder="Cari nama..." value="{{ search }}">
+  </div>
+  <div class="col-md-3">
+    <select name="kelas" class="form-select">
+      <option value="">Filter Kelas</option>
+      {% for k in kelas_list %}
+        <option value="{{ k.kelas }}" {% if filter_kelas==k.kelas %}selected{% endif %}>{{ k.kelas }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <select name="jilid" class="form-select">
+      <option value="">Filter Jilid</option>
+      {% for j in jilid_list %}
+        <option value="{{ j.jilid }}" {% if filter_jilid==j.jilid %}selected{% endif %}>{{ j.jilid }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-primary w-100">Cari / Filter</button>
+  </div>
+</form>
+
 <h5 class="text-center mb-3">
   <u>DATA MURID {% if kelas %} KELAS {{ kelas }}{% endif %}{% if jilid %} JILID {{ jilid }}{% endif %}</u>
 </h5>
