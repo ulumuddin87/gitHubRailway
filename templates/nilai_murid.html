@@ -40,6 +40,14 @@
       </table>
     </div>
 
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">📚 Input Nilai Mapel</h5>
+      <!-- Tombol buka modal -->
+      <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalMapel">
+        ➕ Tambah Mapel
+      </button>
+    </div>
+
     <!-- Form input nilai baru -->
     <form method="POST" onsubmit="return confirmSubmit(event)">
       <div class="row g-3">
@@ -55,15 +63,22 @@
         {% endfor %}
       </div>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h5 class="mb-0">📚 Input Nilai Mapel</h5>
-  <!-- Tombol buka modal -->
-  <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalMapel">
-    ➕ Tambah Mapel
-  </button>
+      <div class="d-flex justify-content-between mt-4">
+        <a href="{{ url_for('data_murid') }}" class="btn btn-secondary">⬅ Kembali</a>
+        <div>
+          <button type="submit" name="action" value="simpan" class="btn btn-warning me-2">
+            💾 Simpan Sementara
+          </button>
+          <button type="submit" name="action" value="upload" class="btn btn-success">
+            🚀 Upload Final
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 
-<!-- Modal Tambah Mapel -->
+<!-- Modal Tambah Mapel (diluar form utama supaya tidak nested) -->
 <div class="modal fade" id="modalMapel" tabindex="-1" aria-labelledby="modalMapelLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -88,23 +103,6 @@
         </div>
       </form>
     </div>
-  </div>
-</div>
-
-
-
-      <div class="d-flex justify-content-between mt-4">
-        <a href="{{ url_for('data_murid') }}" class="btn btn-secondary">⬅ Kembali</a>
-        <div>
-          <button type="submit" name="action" value="simpan" class="btn btn-warning me-2">
-            💾 Simpan Sementara
-          </button>
-          <button type="submit" name="action" value="upload" class="btn btn-success">
-            🚀 Upload Final
-          </button>
-        </div>
-      </div>
-    </form>
   </div>
 </div>
 
