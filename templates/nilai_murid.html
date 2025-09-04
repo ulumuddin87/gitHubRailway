@@ -15,34 +15,37 @@
     </ul>
 
     <h5 class="mt-4">📖 Riwayat Nilai</h5>
-    <table class="table table-bordered table-striped">
-      <thead class="table-light">
-        <tr>
-          <th>Jilid</th>
-          <th>Bacaan</th>
-          <th>Menulis</th>
-          <th>Hafalan</th>
-          <th>Ahlak</th>
-          <th>Kehadiran</th>
-          <th>Diskripsi</th>
-          <th>Tanggal</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for n in riwayat %}
-        <tr>
-          <td>{{ n.jilid }}</td>
-          <td>{{ n.nilai_bacaan }}</td>
-          <td>{{ n.nilai_menulis }}</td>
-          <td>{{ n.nilai_hafalan }}</td>
-          <td>{{ n.nilai_ahlak }}</td>
-          <td>{{ n.nilai_kehadiran }}</td>
-          <td>{{ n.diskripsi }}</td>
-          <td>{{ n.created_at.strftime("%d-%m-%Y") }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+<div class="table-responsive">
+  <table class="table table-bordered table-striped table-sm align-middle text-center">
+    <thead class="table-light">
+      <tr>
+        <th>Jilid</th>
+        <th>Bacaan</th>
+        <th>Menulis</th>
+        <th>Hafalan</th>
+        <th>Ahlak</th>
+        <th>Kehadiran</th>
+        <th>Diskripsi</th>
+        <th>Tanggal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for n in riwayat %}
+      <tr>
+        <td>{{ n.jilid }}</td>
+        <td>{{ n.nilai_bacaan }}</td>
+        <td>{{ n.nilai_menulis }}</td>
+        <td>{{ n.nilai_hafalan }}</td>
+        <td>{{ n.nilai_ahlak }}</td>
+        <td>{{ n.nilai_kehadiran }}</td>
+        <td class="text-start small">{{ n.diskripsi }}</td>
+        <td>{{ n.created_at.strftime("%d-%m-%Y") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 
     <form method="POST" id="nilaiForm">
       <div class="row g-3">
