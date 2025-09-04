@@ -277,6 +277,8 @@ def generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran):
 def nilai_murid(id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Ambil data murid
     cur.execute("SELECT * FROM murid WHERE id=%s", (id,))
     murid = cur.fetchone()
     if not murid:
@@ -291,24 +293,34 @@ def nilai_murid(id):
         ahlak = request.form.get("ahlak")
         kehadiran = request.form.get("kehadiran")
         diskripsi = request.form.get("diskripsi")
+
         if not diskripsi:
             diskripsi = generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran)
 
+        jilid_aktif = int(murid["jilid"])
+
+        # Simpan ke tabel nilai (histori per jilid)
         cur.execute("""
-            UPDATE murid SET 
-                nilai_bacaan=%s, nilai_menulis=%s, nilai_hafalan=%s, nilai_ahlak=%s,
-                nilai_kehadiran=%s, diskripsi=%s
-            WHERE id=%s
-        """, (bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi, id))
+            INSERT INTO nilai (murid_id, jilid, nilai_bacaan, nilai_menulis, nilai_hafalan, nilai_ahlak, nilai_kehadiran, diskripsi)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (id, jilid_aktif, bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi))
+
+        # Naikkan jilid aktif murid
+        cur.execute("UPDATE murid SET jilid = jilid + 1 WHERE id=%s", (id,))
+
         conn.commit()
         cur.close()
         conn.close()
-        flash("✅ Nilai berhasil disimpan!", "success")
+        flash("✅ Nilai berhasil disimpan & Jilid Naik!", "success")
         return redirect(url_for("data_murid"))
+
+    # Ambil riwayat nilai murid
+    cur.execute("SELECT * FROM nilai WHERE murid_id=%s ORDER BY jilid ASC", (id,))
+    riwayat = cur.fetchall()
 
     cur.close()
     conn.close()
-    return render_template("nilai_murid.html", murid=murid)
+    return render_template("nilai_murid.html", murid=murid, riwayat=riwayat)
 
 # ================= RUN ================= #
 
