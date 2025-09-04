@@ -39,13 +39,14 @@
 </div>
 
 
-
 <form method="POST">
   <div class="row g-3">
     {% for m in mapel_list %}
     <div class="col-md-6">
       <label class="form-label">Nilai {{ m.nama }}</label>
-      <input type="number" name="mapel_{{ m.id }}" class="form-control">
+      <input type="number" name="mapel_{{ m.id }}" class="form-control" required>
+      <textarea name="diskripsi_{{ m.id }}" rows="2" class="form-control mt-2"
+        placeholder="Catatan untuk {{ m.nama }}" required></textarea>
     </div>
     {% endfor %}
   </div>
@@ -58,6 +59,10 @@
     </div>
   </div>
 </form>
+
+
+
+
 
 
 

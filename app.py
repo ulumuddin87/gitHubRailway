@@ -304,25 +304,33 @@ def nilai_murid(id):
             flash("💾 Nilai sementara berhasil disimpan di tabel murid!", "info")
 
         elif action == "upload":
-            # Upload ke tabel nilai (riwayat)
-            for m in mapel_list:
-                nilai = request.form.get(f"mapel_{m['id']}")
-                if nilai:
-                    cur.execute(
-                        """
-                        INSERT INTO nilai (murid_id, mapel_id, jilid, nilai)
-                        VALUES (%s, %s, %s, %s)
-                        """,
-                        (id, m["id"], jilid_aktif, nilai),
-                    )
-            # Naikkan jilid
-            cur.execute("UPDATE murid SET jilid = jilid + 1 WHERE id=%s", (id,))
-            conn.commit()
-            flash("✅ Nilai berhasil diupload & Jilid naik!", "success")
+    # Cek semua mapel harus ada nilai & diskripsi
+    for m in mapel_list:
+        nilai = request.form.get(f"mapel_{m['id']}")
+        diskripsi = request.form.get(f"diskripsi_{m['id']}")
+        if not nilai or not diskripsi:
+            flash(f"⚠️ Nilai atau diskripsi untuk {m['nama']} belum lengkap!", "danger")
+            cur.close()
+            conn.close()
+            return redirect(request.url)
 
-        cur.close()
-        conn.close()
-        return redirect(url_for("data_murid"))
+    # Kalau lolos validasi → simpan
+    for m in mapel_list:
+        nilai = request.form.get(f"mapel_{m['id']}")
+        diskripsi = request.form.get(f"diskripsi_{m['id']}")
+        cur.execute(
+            """
+            INSERT INTO nilai (murid_id, mapel_id, jilid, nilai, diskripsi)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (id, m["id"], jilid_aktif, nilai, diskripsi),
+        )
+
+    # Naikkan jilid
+    cur.execute("UPDATE murid SET jilid = jilid + 1 WHERE id=%s", (id,))
+    conn.commit()
+    flash("✅ Semua nilai & diskripsi berhasil diupload & Jilid naik!", "success")
+
 
     # Ambil riwayat nilai (group by jilid)
     cur.execute("""
