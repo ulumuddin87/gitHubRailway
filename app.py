@@ -270,9 +270,6 @@ def biodata_murid(id):
 
 # ================= NILAI ================= #
 
-def generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran):
-    return f"Bacaan: {bacaan}, Menulis: {menulis}, Hafalan: {hafalan}, Ahlak: {ahlak}, Kehadiran: {kehadiran}"
-
 @app.route("/nilai/<int:id>", methods=["GET", "POST"])
 def nilai_murid(id):
     conn = get_db_connection()
@@ -286,50 +283,62 @@ def nilai_murid(id):
         conn.close()
         return "Data murid tidak ditemukan", 404
 
+    # Ambil daftar mapel
+    cur.execute("SELECT * FROM mapel ORDER BY id ASC")
+    mapel_list = cur.fetchall()
+
     if request.method == "POST":
-        bacaan = request.form.get("bacaan")
-        menulis = request.form.get("menulis")
-        hafalan = request.form.get("hafalan")
-        ahlak = request.form.get("ahlak")
-        kehadiran = request.form.get("kehadiran")
-        diskripsi = request.form.get("diskripsi")
-
-        # ✅ cek apakah ada nilai yang kosong
-        if not all([bacaan, menulis, hafalan, ahlak, kehadiran]):
-            flash("❌ Nilai ada yang kosong, tolong dilengkapi.", "warning")
-            cur.close()
-            conn.close()
-            return redirect(url_for("nilai_murid", id=id))
-
-        if not diskripsi:
-            diskripsi = generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran)
-
+        action = request.form.get("action")  # simpan / upload
         jilid_aktif = int(murid["jilid"])
 
-        # Simpan ke tabel nilai (histori per jilid)
-        cur.execute("""
-            INSERT INTO nilai (
-                murid_id, jilid, nilai_bacaan, nilai_menulis, 
-                nilai_hafalan, nilai_ahlak, nilai_kehadiran, diskripsi
-            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-        """, (id, jilid_aktif, bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi))
+        if action == "simpan":
+            # Simpan sementara ke tabel murid
+            for m in mapel_list:
+                nilai = request.form.get(f"mapel_{m['id']}")
+                if nilai:
+                    cur.execute(
+                        f"UPDATE murid SET {m['nama'].lower()} = %s WHERE id=%s",
+                        (nilai, id),
+                    )
+            conn.commit()
+            flash("💾 Nilai sementara berhasil disimpan di tabel murid!", "info")
 
-        # Naikkan jilid aktif murid
-        cur.execute("UPDATE murid SET jilid = jilid + 1 WHERE id=%s", (id,))
+        elif action == "upload":
+            # Upload ke tabel nilai (riwayat)
+            for m in mapel_list:
+                nilai = request.form.get(f"mapel_{m['id']}")
+                if nilai:
+                    cur.execute(
+                        """
+                        INSERT INTO nilai (murid_id, mapel_id, jilid, nilai)
+                        VALUES (%s, %s, %s, %s)
+                        """,
+                        (id, m["id"], jilid_aktif, nilai),
+                    )
+            # Naikkan jilid
+            cur.execute("UPDATE murid SET jilid = jilid + 1 WHERE id=%s", (id,))
+            conn.commit()
+            flash("✅ Nilai berhasil diupload & Jilid naik!", "success")
 
-        conn.commit()
         cur.close()
         conn.close()
-        flash("✅ Nilai berhasil disimpan & Jilid Naik!", "success")
         return redirect(url_for("data_murid"))
 
-    # Ambil riwayat nilai murid
-    cur.execute("SELECT * FROM nilai WHERE murid_id=%s ORDER BY jilid ASC", (id,))
+    # Ambil riwayat nilai (group by jilid)
+    cur.execute("""
+        SELECT n.jilid, m.nama AS mapel, n.nilai, n.created_at
+        FROM nilai n
+        JOIN mapel m ON n.mapel_id = m.id
+        WHERE n.murid_id=%s
+        ORDER BY n.jilid ASC, m.id ASC
+    """, (id,))
     riwayat = cur.fetchall()
 
     cur.close()
     conn.close()
-    return render_template("nilai_murid.html", murid=murid, riwayat=riwayat)
+
+    return render_template("nilai_murid.html", murid=murid, mapel_list=mapel_list, riwayat=riwayat)
+
 
 
 # ================= RUN ================= #
