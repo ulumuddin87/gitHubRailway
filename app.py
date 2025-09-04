@@ -283,69 +283,80 @@ def nilai_murid(id):
         conn.close()
         return "Data murid tidak ditemukan", 404
 
-    # Ambil daftar mapel
+    # Ambil daftar mata pelajaran diniyah
     cur.execute("SELECT * FROM mapel ORDER BY id ASC")
     mapel_list = cur.fetchall()
 
     if request.method == "POST":
-        action = request.form.get("action")  # simpan / upload
+        action = request.form.get("action")  # tombol yang ditekan
         jilid_aktif = int(murid["jilid"])
 
         if action == "simpan":
-            # Simpan sementara ke tabel murid
+            # Simpan sementara ke tabel murid (nilai & diskripsi belum final)
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
-                if nilai:
+                diskripsi = request.form.get(f"diskripsi_{m['id']}")
+                if nilai:  # hanya update jika ada isinya
                     cur.execute(
-                        f"UPDATE murid SET {m['nama'].lower()} = %s WHERE id=%s",
-                        (nilai, id),
+                        f"UPDATE murid SET nilai_mapel_{m['id']} = %s, diskripsi_mapel_{m['id']} = %s WHERE id = %s",
+                        (nilai, diskripsi, id),
                     )
             conn.commit()
-            flash("💾 Nilai sementara berhasil disimpan di tabel murid!", "info")
-
-        elif action == "upload":
-    # Cek semua mapel harus ada nilai & diskripsi
-    for m in mapel_list:
-        nilai = request.form.get(f"mapel_{m['id']}")
-        diskripsi = request.form.get(f"diskripsi_{m['id']}")
-        if not nilai or not diskripsi:
-            flash(f"⚠️ Nilai atau diskripsi untuk {m['nama']} belum lengkap!", "danger")
+            flash("💾 Nilai sementara berhasil disimpan!", "info")
             cur.close()
             conn.close()
             return redirect(request.url)
 
-    # Kalau lolos validasi → simpan
-    for m in mapel_list:
-        nilai = request.form.get(f"mapel_{m['id']}")
-        diskripsi = request.form.get(f"diskripsi_{m['id']}")
-        cur.execute(
-            """
-            INSERT INTO nilai (murid_id, mapel_id, jilid, nilai, diskripsi)
-            VALUES (%s, %s, %s, %s, %s)
-            """,
-            (id, m["id"], jilid_aktif, nilai, diskripsi),
-        )
+        elif action == "upload":
+            # Validasi semua mapel wajib ada nilai & diskripsi
+            for m in mapel_list:
+                nilai = request.form.get(f"mapel_{m['id']}")
+                diskripsi = request.form.get(f"diskripsi_{m['id']}")
+                if not nilai or not diskripsi:
+                    flash(f"⚠️ Nilai atau diskripsi untuk {m['nama']} belum lengkap!", "danger")
+                    cur.close()
+                    conn.close()
+                    return redirect(request.url)
 
-    # Naikkan jilid
-    cur.execute("UPDATE murid SET jilid = jilid + 1 WHERE id=%s", (id,))
-    conn.commit()
-    flash("✅ Semua nilai & diskripsi berhasil diupload & Jilid naik!", "success")
+            # Jika valid → simpan ke tabel nilai
+            for m in mapel_list:
+                nilai = request.form.get(f"mapel_{m['id']}")
+                diskripsi = request.form.get(f"diskripsi_{m['id']}")
+                cur.execute(
+                    """
+                    INSERT INTO nilai (murid_id, mapel_id, jilid, nilai, diskripsi)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (id, m["id"], jilid_aktif, nilai, diskripsi),
+                )
 
+            # Naikkan jilid
+            cur.execute("UPDATE murid SET jilid = jilid + 1 WHERE id=%s", (id,))
+            conn.commit()
+            flash("✅ Semua nilai & diskripsi berhasil diupload & Jilid naik!", "success")
+            cur.close()
+            conn.close()
+            return redirect(url_for("data_murid"))
 
-    # Ambil riwayat nilai (group by jilid)
-    cur.execute("""
-        SELECT n.jilid, m.nama AS mapel, n.nilai, n.created_at
+    # Ambil riwayat nilai murid
+    cur.execute(
+        """
+        SELECT n.*, m.nama as mapel_nama
         FROM nilai n
         JOIN mapel m ON n.mapel_id = m.id
-        WHERE n.murid_id=%s
-        ORDER BY n.jilid ASC, m.id ASC
-    """, (id,))
+        WHERE murid_id=%s
+        ORDER BY jilid ASC, mapel_id ASC
+        """,
+        (id,),
+    )
     riwayat = cur.fetchall()
 
     cur.close()
     conn.close()
+    return render_template(
+        "nilai_murid.html", murid=murid, mapel_list=mapel_list, riwayat=riwayat
+    )
 
-    return render_template("nilai_murid.html", murid=murid, mapel_list=mapel_list, riwayat=riwayat)
 
 
 
