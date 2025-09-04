@@ -278,49 +278,41 @@ def nilai_murid(id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # Ambil data murid
-    cur.execute("SELECT * FROM murid WHERE id=%s", (id,))
-    murid = cur.fetchone()
-    if not murid:
-        cur.close()
-        conn.close()
-        return "Data murid tidak ditemukan", 404
+   
+    # helper untuk convert ke int/NULL
+    def parse_int(val):
+        if val is None or val.strip() == "":
+            return None   # biar masuk NULL ke DB
+        return int(val)
 
-    if request.method == "POST":
-        bacaan = request.form.get("bacaan")
-        menulis = request.form.get("menulis")
-        hafalan = request.form.get("hafalan")
-        ahlak = request.form.get("ahlak")
-        kehadiran = request.form.get("kehadiran")
-        diskripsi = request.form.get("diskripsi")
+    # ambil data dari form
+    jilid = parse_int(request.form.get("jilid"))
+    nilai_bacaan = parse_int(request.form.get("nilai_bacaan"))
+    nilai_menulis = parse_int(request.form.get("nilai_menulis"))
+    nilai_hafalan = parse_int(request.form.get("nilai_hafalan"))
+    nilai_ahlak = parse_int(request.form.get("nilai_ahlak"))
+    nilai_kehadiran = parse_int(request.form.get("nilai_kehadiran"))
+    deskripsi = request.form.get("deskripsi", "")
 
-        if not diskripsi:
-            diskripsi = generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran)
+    # simpan ke tabel nilai
+    cur.execute("""
+        INSERT INTO nilai (
+            murid_id, jilid, nilai_bacaan, nilai_menulis, 
+            nilai_hafalan, nilai_ahlak, nilai_kehadiran, diskripsi
+        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+    """, (
+        murid_id, jilid, nilai_bacaan, nilai_menulis,
+        nilai_hafalan, nilai_ahlak, nilai_kehadiran, deskripsi
+    ))
 
-        jilid_aktif = int(murid["jilid"])
+    # update jilid di tabel murid (naik 1 kalau nilainya lengkap)
+    if jilid is not None:
+        cur.execute("UPDATE murid SET jilid = %s WHERE id=%s", (jilid, murid_id))
 
-        # Simpan ke tabel nilai (histori per jilid)
-        cur.execute("""
-            INSERT INTO nilai (murid_id, jilid, nilai_bacaan, nilai_menulis, nilai_hafalan, nilai_ahlak, nilai_kehadiran, diskripsi)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-        """, (id, jilid_aktif, bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi))
-
-        # Naikkan jilid aktif murid
-        cur.execute("UPDATE murid SET jilid = jilid + 1 WHERE id=%s", (id,))
-
-        conn.commit()
-        cur.close()
-        conn.close()
-        flash("✅ Nilai berhasil disimpan & Jilid Naik!", "success")
-        return redirect(url_for("data_murid"))
-
-    # Ambil riwayat nilai murid
-    cur.execute("SELECT * FROM nilai WHERE murid_id=%s ORDER BY jilid ASC", (id,))
-    riwayat = cur.fetchall()
-
+    conn.commit()
     cur.close()
-    conn.close()
-    return render_template("nilai_murid.html", murid=murid, riwayat=riwayat)
+
+    return redirect(url_for("lihat_nilai", murid_id=murid_id))
 
 # ================= RUN ================= #
 
