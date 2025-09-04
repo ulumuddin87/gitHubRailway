@@ -278,7 +278,6 @@ def nilai_murid(id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # Ambil data murid
     cur.execute("SELECT * FROM murid WHERE id=%s", (id,))
     murid = cur.fetchone()
     if not murid:
@@ -294,42 +293,48 @@ def nilai_murid(id):
         kehadiran = request.form.get("kehadiran")
         diskripsi = request.form.get("diskripsi")
 
-        # ✅ cek apakah ada nilai yang kosong
-        if not all([bacaan, menulis, hafalan, ahlak, kehadiran]):
-            flash("❌ Nilai ada yang kosong, tolong dilengkapi.", "warning")
-            cur.close()
-            conn.close()
-            return redirect(url_for("nilai_murid", id=id))
-
         if not diskripsi:
             diskripsi = generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran)
 
-        jilid_aktif = int(murid["jilid"])
+        action = request.form.get("action")  # cek tombol mana yang ditekan
 
-        # Simpan ke tabel nilai (histori per jilid)
-        cur.execute("""
-            INSERT INTO nilai (
-                murid_id, jilid, nilai_bacaan, nilai_menulis, 
-                nilai_hafalan, nilai_ahlak, nilai_kehadiran, diskripsi
-            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-        """, (id, jilid_aktif, bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi))
+        if action == "simpan":
+            # Simpan sementara ke tabel murid
+            cur.execute("""
+                UPDATE murid
+                SET nilai_bacaan=%s, nilai_menulis=%s, nilai_hafalan=%s,
+                    nilai_ahlak=%s, nilai_kehadiran=%s, diskripsi=%s
+                WHERE id=%s
+            """, (bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi, id))
+            flash("📝 Nilai berhasil disimpan sementara!", "info")
 
-        # Naikkan jilid aktif murid
-        cur.execute("UPDATE murid SET jilid = jilid + 1 WHERE id=%s", (id,))
+        elif action == "upload":
+            # Pastikan nilai lengkap
+            if not bacaan or not menulis or not hafalan or not ahlak or not kehadiran:
+                flash("⚠️ Nilai ada yang kosong, tolong lengkapi sebelum upload.", "danger")
+            else:
+                jilid_aktif = int(murid["jilid"])
+                cur.execute("""
+                    INSERT INTO nilai (murid_id, jilid, nilai_bacaan, nilai_menulis,
+                        nilai_hafalan, nilai_ahlak, nilai_kehadiran, diskripsi)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                """, (id, jilid_aktif, bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi))
+                
+                cur.execute("UPDATE murid SET jilid = jilid + 1 WHERE id=%s", (id,))
+                flash("✅ Nilai berhasil di-upload & Jilid Naik!", "success")
 
         conn.commit()
         cur.close()
         conn.close()
-        flash("✅ Nilai berhasil disimpan & Jilid Naik!", "success")
-        return redirect(url_for("data_murid"))
+        return redirect(url_for("nilai_murid", id=id))
 
-    # Ambil riwayat nilai murid
     cur.execute("SELECT * FROM nilai WHERE murid_id=%s ORDER BY jilid ASC", (id,))
     riwayat = cur.fetchall()
 
     cur.close()
     conn.close()
-    return render_template("nilai_murid.html", murid=murid, riwayat=riwayat)
+    return render_template("nilai_murid.html", murid=murid, riwayat=riwayat, jilid=murid["jilid"])
+
 
 
 # ================= RUN ================= #
