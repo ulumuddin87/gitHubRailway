@@ -82,12 +82,24 @@
   </div>
 </div>
 
+<!-- ✅ SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   document.getElementById('nilaiForm').addEventListener('submit', function(event) {
-    let confirmSubmit = confirm("Apakah nilai sudah benar?");
-    if (!confirmSubmit) {
-      event.preventDefault(); // batalkan simpan kalau pilih "No"
-    }
+    event.preventDefault(); // stop dulu submit otomatis
+
+    Swal.fire({
+      title: 'Apakah nilai sudah benar?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '✅ Ya, Simpan',
+      cancelButtonText: '❌ Belum',
+      reverseButtons: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.submit(); // baru kirim form kalau pilih Ya
+      }
+    });
   });
 </script>
 
