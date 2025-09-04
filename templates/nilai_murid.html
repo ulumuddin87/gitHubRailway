@@ -4,87 +4,80 @@
 
 <div class="card shadow-sm">
   <div class="card-header bg-success text-white">
-    <h5 class="mb-0">Nilai Murid - Jilid {{ jilid }}</h5>
+    <h5 class="mb-0">Nilai Murid - Jilid {{ murid.jilid }}</h5>
   </div>
   <div class="card-body">
     <ul>
       <li><b>Nama:</b> {{ murid.nama }}</li>
       <li><b>Kelas:</b> {{ murid.kelas }}</li>
-      <li><b>Jilid Aktif:</b> {{ murid.jilid }}</li>
-      <li><b>Wali Kelas:</b> {{ murid.wali_kelas}}</li>
+      <li><b>Wali Kelas:</b> {{ murid.wali_kelas }}</li>
     </ul>
 
+    <!-- Riwayat nilai -->
     <h5 class="mt-4">📖 Riwayat Nilai</h5>
-<div class="table-responsive">
-  <table class="table table-bordered table-striped align-middle text-center">
-    <thead class="table-light">
-      <tr>
-        <th>Jilid</th>
-        <th>Mapel</th>
-        <th>Nilai</th>
-        <th>Tanggal</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for n in riwayat %}
-      <tr>
-        <td>{{ n.jilid }}</td>
-        <td>{{ n.mapel }}</td>
-        <td>{{ n.nilai }}</td>
-        <td>{{ n.created_at.strftime("%d-%m-%Y") }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped text-center align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Jilid</th>
+            <th>Mata Pelajaran</th>
+            <th>Nilai</th>
+            <th>Diskripsi</th>
+            <th>Tanggal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for n in riwayat %}
+          <tr>
+            <td>{{ n.jilid }}</td>
+            <td>{{ n.mapel_nama }}</td>
+            <td>{{ n.nilai }}</td>
+            <td>{{ n.diskripsi }}</td>
+            <td>{{ n.created_at.strftime("%d-%m-%Y") }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Form input nilai baru -->
+    <form method="POST" onsubmit="return confirmSubmit(event)">
+      <div class="row g-3">
+        {% for m in mapel_list %}
+        <div class="col-md-6">
+          <label class="form-label">{{ m.nama }} (Nilai)</label>
+          <input type="number" name="mapel_{{ m.id }}" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Diskripsi {{ m.nama }}</label>
+          <input type="text" name="diskripsi_{{ m.id }}" class="form-control" required>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="d-flex justify-content-between mt-4">
+        <a href="{{ url_for('data_murid') }}" class="btn btn-secondary">⬅ Kembali</a>
+        <div>
+          <button type="submit" name="action" value="simpan" class="btn btn-warning me-2">
+            💾 Simpan Sementara
+          </button>
+          <button type="submit" name="action" value="upload" class="btn btn-success">
+            🚀 Upload Final
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 
-
-<form method="POST">
-  <div class="row g-3">
-    {% for m in mapel_list %}
-    <div class="col-md-6">
-      <label class="form-label">Nilai {{ m.nama }}</label>
-      <input type="number" name="mapel_{{ m.id }}" class="form-control" required>
-      <textarea name="diskripsi_{{ m.id }}" rows="2" class="form-control mt-2"
-        placeholder="Catatan untuk {{ m.nama }}" required></textarea>
-    </div>
-    {% endfor %}
-  </div>
-
-  <div class="d-flex justify-content-between mt-3">
-    <a href="{{ url_for('data_murid') }}" class="btn btn-secondary">⬅ Kembali</a>
-    <div>
-      <button type="submit" name="action" value="simpan" class="btn btn-warning">💾 Simpan Sementara</button>
-      <button type="submit" name="action" value="upload" class="btn btn-success">⬆️ Upload Nilai</button>
-    </div>
-  </div>
-</form>
-
-
-
-
-
-
-
-<!-- ✅ SweetAlert2 CDN -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  document.getElementById('nilaiForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // stop dulu submit otomatis
-
-    Swal.fire({
-      title: 'Apakah nilai sudah benar?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: '✅ Ya, Simpan',
-      cancelButtonText: '❌ Belum',
-      reverseButtons: true
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.submit(); // baru kirim form kalau pilih Ya
-      }
-    });
-  });
+function confirmSubmit(event) {
+  const action = event.submitter.value;
+  if (action === "upload") {
+    return confirm("⚠️ Apakah semua nilai & diskripsi sudah benar untuk diupload?");
+  }
+  return true;
+}
 </script>
 
 {% endblock %}
