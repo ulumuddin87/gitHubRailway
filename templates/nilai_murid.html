@@ -4,7 +4,7 @@
 
 <div class="card shadow-sm">
   <div class="card-header bg-success text-white">
-    <h5 class="mb-0">Nilai Murid - Jilid {{ jilid }}</h5>
+    <h5 class="mb-0">Nilai Murid - Jilid {{ murid.jilid }}</h5>
   </div>
   <div class="card-body">
     <ul>
@@ -14,38 +14,7 @@
       <li><b>Wali Kelas:</b> {{ murid.wali_kelas}}</li>
     </ul>
 
-    <h5 class="mt-4">📖 Riwayat Nilai</h5>
-<table class="table table-bordered table-striped">
-  <thead class="table-light">
-    <tr>
-      <th>Jilid</th>
-      <th>Bacaan</th>
-      <th>Menulis</th>
-      <th>Hafalan</th>
-      <th>Ahlak</th>
-      <th>Kehadiran</th>
-      <th>Diskripsi</th>
-      <th>Tanggal</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for n in riwayat %}
-    <tr>
-      <td>{{ n.jilid }}</td>
-      <td>{{ n.nilai_bacaan }}</td>
-      <td>{{ n.nilai_menulis }}</td>
-      <td>{{ n.nilai_hafalan }}</td>
-      <td>{{ n.nilai_ahlak }}</td>
-      <td>{{ n.nilai_kehadiran }}</td>
-      <td>{{ n.diskripsi }}</td>
-      <td>{{ n.created_at.strftime("%d-%m-%Y") }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-
-    <form method="POST">
+    <form method="POST" id="nilaiForm">
       <div class="row g-3">
         <div class="col-md-6">
           <label class="form-label">Nilai Membaca</label>
@@ -82,5 +51,13 @@
     </form>
   </div>
 </div>
+
+<script>
+  document.getElementById('nilaiForm').addEventListener('submit', function(event) {
+    if (!confirm("Apakah nilai sudah benar?")) {
+      event.preventDefault(); // batalkan submit kalau user klik Cancel
+    }
+  });
+</script>
 
 {% endblock %}
