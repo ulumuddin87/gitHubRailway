@@ -294,6 +294,13 @@ def nilai_murid(id):
         kehadiran = request.form.get("kehadiran")
         diskripsi = request.form.get("diskripsi")
 
+        # ✅ cek apakah ada nilai yang kosong
+        if not all([bacaan, menulis, hafalan, ahlak, kehadiran]):
+            flash("❌ Nilai ada yang kosong, tolong dilengkapi.", "warning")
+            cur.close()
+            conn.close()
+            return redirect(url_for("nilai_murid", id=id))
+
         if not diskripsi:
             diskripsi = generate_diskripsi(bacaan, menulis, hafalan, ahlak, kehadiran)
 
@@ -301,8 +308,10 @@ def nilai_murid(id):
 
         # Simpan ke tabel nilai (histori per jilid)
         cur.execute("""
-            INSERT INTO nilai (murid_id, jilid, nilai_bacaan, nilai_menulis, nilai_hafalan, nilai_ahlak, nilai_kehadiran, diskripsi)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+            INSERT INTO nilai (
+                murid_id, jilid, nilai_bacaan, nilai_menulis, 
+                nilai_hafalan, nilai_ahlak, nilai_kehadiran, diskripsi
+            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
         """, (id, jilid_aktif, bacaan, menulis, hafalan, ahlak, kehadiran, diskripsi))
 
         # Naikkan jilid aktif murid
@@ -321,6 +330,7 @@ def nilai_murid(id):
     cur.close()
     conn.close()
     return render_template("nilai_murid.html", murid=murid, riwayat=riwayat)
+
 
 # ================= RUN ================= #
 
