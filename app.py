@@ -359,6 +359,27 @@ def nilai_murid(id):
 
 
 
+@app.route("/mapel/tambah", methods=["POST"])
+def tambah_mapel():
+    nama = request.form.get("nama")
+    deskripsi = request.form.get("deskripsi")
+
+    if not nama or not deskripsi:
+        flash("⚠️ Nama & Deskripsi mapel wajib diisi!", "danger")
+        return redirect(request.referrer)
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("INSERT INTO mapel (nama, deskripsi) VALUES (%s, %s)", (nama, deskripsi))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    flash(f"✅ Mapel '{nama}' berhasil ditambahkan!", "success")
+    return redirect(request.referrer)
+
+
 
 # ================= RUN ================= #
 

@@ -55,6 +55,44 @@
         {% endfor %}
       </div>
 
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="mb-0">📚 Input Nilai Mapel</h5>
+  <!-- Tombol buka modal -->
+  <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalMapel">
+    ➕ Tambah Mapel
+  </button>
+</div>
+
+<!-- Modal Tambah Mapel -->
+<div class="modal fade" id="modalMapel" tabindex="-1" aria-labelledby="modalMapelLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('tambah_mapel') }}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalMapelLabel">Tambah Mata Pelajaran</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nama Mapel</label>
+            <input type="text" name="nama" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Deskripsi Mapel</label>
+            <textarea name="deskripsi" class="form-control" rows="3" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-success">💾 Simpan Mapel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
       <div class="d-flex justify-content-between mt-4">
         <a href="{{ url_for('data_murid') }}" class="btn btn-secondary">⬅ Kembali</a>
         <div>
