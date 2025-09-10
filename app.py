@@ -450,7 +450,7 @@ def rapot(murid_id, jilid):
 
 @app.route("/rapot/cetak/<int:rapot_id>")
 def cetak_rapot(rapot_id):
-    conn = get_db_connection()   # ganti get_db -> get_db_connection
+    conn = get_db_connection()
     cur = conn.cursor()
 
     # ambil rapot + murid
@@ -463,7 +463,7 @@ def cetak_rapot(rapot_id):
     """, (rapot_id,))
     rapot = cur.fetchone()
 
-    # ambil nilai
+    # ambil semua nilai utk jilid tsb
     cur.execute("""
         SELECT mp.nama, n.nilai, n.diskripsi
         FROM nilai n
@@ -471,56 +471,73 @@ def cetak_rapot(rapot_id):
         WHERE n.murid_id=%s AND n.jilid=%s
     """, (rapot[6], rapot[0]))
     nilai_jilid = cur.fetchall()
-
     cur.close()
     conn.close()
 
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
+    # mapping kategori
+    kategori_mapel = {
+        "BTQ": ["Kehadiran", "Membaca Jilid", "Hafalan materi"],
+        "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid", "Bahasa Arab", "Pego", "Imla’/Khot", "Fiqih"],
+        "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
+    }
 
-    # judul
-    c.setFont("Helvetica-Bold", 16)
-    c.drawCentredString(width/2, height-50, f"RAPOR JILID {rapot[0]}")
+    # bikin dict {mapel: (nilai, deskripsi)}
+    nilai_dict = {row[0]: (row[1], row[2]) for row in nilai_jilid}
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # header
+    elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b><br/>“MAFATIHUL HUDA”", styles['Title']))
+    elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG<br/>Nomor Statistik : 411.235.17.2074  Telp. 0857-3634-0726", styles['Normal']))
+    elements.append(Spacer(1, 12))
 
     # identitas
-    c.setFont("Helvetica", 12)
-    c.drawString(50, height-100, f"Nama: {rapot[3]}")
-    c.drawString(50, height-120, f"Kelas: {rapot[4]}")
-    c.drawString(50, height-140, f"Wali Kelas: {rapot[5]}")
-    c.drawString(50, height-160, f"Tanggal: {rapot[1].strftime('%d-%m-%Y')}")
+    identitas = [
+        ["Nama", f": {rapot[3]}", "Jilid", f": {rapot[0]}"],
+        ["Kelompok", f": {rapot[4]}", "Tahun Ajaran", f": {rapot[1].year}/{rapot[1].year+1}"],
+    ]
+    t_identitas = Table(identitas, colWidths=[80, 150, 80, 150])
+    elements.append(t_identitas)
+    elements.append(Spacer(1, 20))
 
-    # tabel nilai
-    y = height-200
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "Mata Pelajaran")
-    c.drawString(250, y, "Nilai")
-    c.drawString(320, y, "Deskripsi")
+    elements.append(Paragraph("<b>LAPORAN HASIL BELAJAR SANTRI</b>", styles['Heading2']))
+    elements.append(Spacer(1, 12))
 
-    c.setFont("Helvetica", 11)
-    for mp, nilai, desk in nilai_jilid:
-        y -= 20
-        c.drawString(50, y, mp)
-        c.drawString(250, y, str(nilai))
-        c.drawString(320, y, desk[:40])  # potong biar rapi
+    # generate tabel per kategori
+    for kategori, daftar_mapel in kategori_mapel.items():
+        data = [["NO", "MATERI", "NILAI", "DESKRIPSI"]]
+        for i, m in enumerate(daftar_mapel, start=1):
+            nilai, desk = nilai_dict.get(m, ("", ""))
+            data.append([i, m, nilai, desk])
+        t = Table(data, colWidths=[40, 180, 80, 200])
+        t.setStyle(TableStyle([("GRID", (0,0), (-1,-1), 1, colors.black)]))
+        elements.append(Paragraph(f"<b>{kategori}</b>", styles['Heading3']))
+        elements.append(t)
+        elements.append(Spacer(1, 15))
 
-    # rata-rata
-    y -= 40
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, f"Rata-rata: {rapot[2]:.2f}")
+    # catatan
+    elements.append(Paragraph("<b>CATATAN USTADZAH</b>", styles['Heading3']))
+    elements.append(Spacer(1, 40))
 
     # tanda tangan
-    y -= 100
-    c.setFont("Helvetica", 12)
-    c.drawRightString(width-50, y, f"( {rapot[5]} )")
+    elements.append(Paragraph(f"Jombang, {rapot[1].strftime('%d %B %Y')}", styles['Normal']))
+    elements.append(Spacer(1, 40))
+    tanda_tangan = [
+        ["Wali Santri", "", "Ustzh. Kelompok", "", "Kepala TPQ Mafatihul Huda"],
+        ["(................)", "", f"({rapot[5]})", "", "(................)"]
+    ]
+    t_ttd = Table(tanda_tangan, colWidths=[150,50,150,50,150])
+    elements.append(t_ttd)
 
-    c.showPage()
-    c.save()
-
+    doc.build(elements)
     buffer.seek(0)
     return send_file(buffer, as_attachment=True,
                      download_name=f"rapot_jilid_{rapot[0]}.pdf",
-                     mimetype='application/pdf')
+                     mimetype="application/pdf")
+
 
 
 # ================= RUN ================= #
