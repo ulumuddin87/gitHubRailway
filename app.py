@@ -433,7 +433,7 @@ def rapot(murid_id, jilid):
 
     # Struktur kategori mapel
     kategori_mapel = {
-        "BTQ": ["Kehadiran", "Membaca Jilid", "Hafalan materi"],
+        "BTQ": ["Kehadiran", "Bacaan", "Hafalan"],
         "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid", "Bahasa Arab", "Pego", "Imla’/Khot", "Fiqih"],
         "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
     }
@@ -492,7 +492,7 @@ def cetak_rapot(rapot_id):
 
     # Definisi kategori mapel
     kategori_mapel = {
-        "BTQ": ["Kehadiran", "Membaca Jilid", "Hafalan materi"],
+        "BTQ": ["Kehadiran", "Bacaan", "Hafalan"],
         "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid", "Bahasa Arab", "Pego", "Imla’/Khot", "Fiqih"],
         "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
     }
