@@ -394,12 +394,11 @@ def tambah_mapel():
     return redirect(request.referrer)
 
 
-
 # ================= RAPOT ================= #
 
 @app.route("/rapot/<int:murid_id>/<int:jilid>")
 def rapot(murid_id, jilid):
-    conn = get_db()
+    conn = get_db_connection()   # ganti get_db -> get_db_connection
     cur = conn.cursor()
 
     # ambil identitas murid
@@ -425,8 +424,10 @@ def rapot(murid_id, jilid):
     cur.execute("SELECT id FROM rapot WHERE murid_id=%s AND jilid=%s", (murid_id, jilid))
     ada = cur.fetchone()
     if not ada:
-        cur.execute("INSERT INTO rapot (murid_id, jilid, rata_rata, tanggal) VALUES (%s, %s, %s, %s) RETURNING id",
-                    (murid_id, jilid, rata_rata, date.today()))
+        cur.execute("""
+            INSERT INTO rapot (murid_id, jilid, rata_rata, tanggal) 
+            VALUES (%s, %s, %s, %s) RETURNING id
+        """, (murid_id, jilid, rata_rata, date.today()))
         rapot_id = cur.fetchone()[0]
         conn.commit()
     else:
@@ -435,13 +436,21 @@ def rapot(murid_id, jilid):
     cur.close()
     conn.close()
 
-    return render_template("rapot.html", murid=murid, nilai_jilid=nilai_jilid, rata_rata=rata_rata, jilid=jilid, rapot_id=rapot_id)
+    return render_template(
+        "rapot.html",
+        murid=murid,
+        nilai_jilid=nilai_jilid,
+        rata_rata=rata_rata,
+        jilid=jilid,
+        rapot_id=rapot_id
+    )
+
 
 # ================= CETAK RAPOT ================= #
 
 @app.route("/rapot/cetak/<int:rapot_id>")
 def cetak_rapot(rapot_id):
-    conn = get_db()
+    conn = get_db_connection()   # ganti get_db -> get_db_connection
     cur = conn.cursor()
 
     # ambil rapot + murid
@@ -512,6 +521,7 @@ def cetak_rapot(rapot_id):
     return send_file(buffer, as_attachment=True,
                      download_name=f"rapot_jilid_{rapot[0]}.pdf",
                      mimetype='application/pdf')
+
 
 # ================= RUN ================= #
 
