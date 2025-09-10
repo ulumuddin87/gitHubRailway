@@ -448,42 +448,79 @@ def rapot(murid_id, jilid):
 
 # ================= CETAK RAPOT ================= #
 
-@app.route("/rapot/<int:murid_id>/<int:jilid>")
-def rapot(murid_id, jilid):
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+@app.route("/rapot/cetak/<int:rapot_id>")
+def cetak_rapot(rapot_id):
+    conn = get_db_connection()   # ganti get_db -> get_db_connection
+    cur = conn.cursor()
 
-    # ambil identitas murid
-    cur.execute("SELECT id, nama, kelas, wali_kelas FROM murid WHERE id=%s", (murid_id,))
-    murid = cur.fetchone()
-
-    # ambil nilai mapel utk jilid tsb
+    # ambil rapot + murid
     cur.execute("""
-        SELECT m.nama, n.nilai, n.diskripsi
+        SELECT r.jilid, r.tanggal, r.rata_rata,
+               m.nama, m.kelas, m.wali_kelas, m.id
+        FROM rapot r
+        JOIN murid m ON r.murid_id = m.id
+        WHERE r.id=%s
+    """, (rapot_id,))
+    rapot = cur.fetchone()
+
+    # ambil nilai
+    cur.execute("""
+        SELECT mp.nama, n.nilai, n.diskripsi
         FROM nilai n
-        JOIN mapel m ON n.mapel_id = m.id
+        JOIN mapel mp ON n.mapel_id=mp.id
         WHERE n.murid_id=%s AND n.jilid=%s
-    """, (murid_id, jilid))
+    """, (rapot[6], rapot[0]))
     nilai_jilid = cur.fetchall()
 
     cur.close()
     conn.close()
 
-    # mapping kategori
-    kategori_mapel = {
-        "BTQ": ["Kehadiran", "Membaca Jilid", "Hafalan materi"],
-        "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid", "Bahasa Arab", "Pego", "Imla’/Khot", "Fiqih"],
-        "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
-    }
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
 
-    nilai_dict = {row["nama"]: (row["nilai"], row["diskripsi"]) for row in nilai_jilid}
+    # judul
+    c.setFont("Helvetica-Bold", 16)
+    c.drawCentredString(width/2, height-50, f"RAPOR JILID {rapot[0]}")
 
-    return render_template("rapot.html",
-                           murid=murid,
-                           jilid=jilid,
-                           kategori_mapel=kategori_mapel,
-                           nilai_dict=nilai_dict)
+    # identitas
+    c.setFont("Helvetica", 12)
+    c.drawString(50, height-100, f"Nama: {rapot[3]}")
+    c.drawString(50, height-120, f"Kelas: {rapot[4]}")
+    c.drawString(50, height-140, f"Wali Kelas: {rapot[5]}")
+    c.drawString(50, height-160, f"Tanggal: {rapot[1].strftime('%d-%m-%Y')}")
 
+    # tabel nilai
+    y = height-200
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "Mata Pelajaran")
+    c.drawString(250, y, "Nilai")
+    c.drawString(320, y, "Deskripsi")
+
+    c.setFont("Helvetica", 11)
+    for mp, nilai, desk in nilai_jilid:
+        y -= 20
+        c.drawString(50, y, mp)
+        c.drawString(250, y, str(nilai))
+        c.drawString(320, y, desk[:40])  # potong biar rapi
+
+    # rata-rata
+    y -= 40
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, f"Rata-rata: {rapot[2]:.2f}")
+
+    # tanda tangan
+    y -= 100
+    c.setFont("Helvetica", 12)
+    c.drawRightString(width-50, y, f"( {rapot[5]} )")
+
+    c.showPage()
+    c.save()
+
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True,
+                     download_name=f"rapot_jilid_{rapot[0]}.pdf",
+                     mimetype='application/pdf')
 
 
 # ================= RUN ================= #
