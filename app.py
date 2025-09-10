@@ -394,7 +394,6 @@ def tambah_mapel():
     return redirect(request.referrer)
 
 # ================= RAPOT ================= #
-
 @app.route("/rapot/<int:murid_id>/<int:jilid>")
 def rapot(murid_id, jilid):
     conn = get_db_connection()
@@ -412,6 +411,23 @@ def rapot(murid_id, jilid):
         WHERE n.murid_id=%s AND n.jilid=%s
     """, (murid_id, jilid))
     nilai_jilid = cur.fetchall()
+
+    # Hitung rata-rata
+    rata_rata = sum([row["nilai"] for row in nilai_jilid]) / len(nilai_jilid) if nilai_jilid else 0
+
+    # Simpan / ambil rapot_id
+    cur.execute("SELECT id FROM rapot WHERE murid_id=%s AND jilid=%s", (murid_id, jilid))
+    ada = cur.fetchone()
+    if not ada:
+        cur.execute(
+            "INSERT INTO rapot (murid_id, jilid, rata_rata, tanggal) VALUES (%s, %s, %s, %s) RETURNING id",
+            (murid_id, jilid, rata_rata, date.today())
+        )
+        rapot_id = cur.fetchone()[0]
+        conn.commit()
+    else:
+        rapot_id = ada["id"]
+
     cur.close()
     conn.close()
 
@@ -430,8 +446,11 @@ def rapot(murid_id, jilid):
         murid=murid,
         jilid=jilid,
         kategori_mapel=kategori_mapel,
-        nilai_dict=nilai_dict
+        nilai_dict=nilai_dict,
+        rapot_id=rapot_id,   # ✅ dikirim ke template
+        rata_rata=rata_rata
     )
+
 
 
 # ================= CETAK RAPOT ================= #
