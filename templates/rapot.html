@@ -1,0 +1,48 @@
+<div class="card shadow">
+  <div class="card-header bg-primary text-white">
+    <h4 class="mb-0">📑 Rapor Jilid {{ jilid }}</h4>
+  </div>
+  <div class="card-body">
+    <h5>Identitas Murid</h5>
+    <ul>
+      <li><b>Nama:</b> {{ murid[1] }}</li>
+      <li><b>Kelas:</b> {{ murid[2] }}</li>
+      <li><b>Wali Kelas:</b> {{ murid[3] }}</li>
+    </ul>
+
+    <h5 class="mt-3">📚 Nilai Mapel</h5>
+    <table class="table table-bordered text-center">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Mata Pelajaran</th>
+          <th>Nilai</th>
+          <th>Deskripsi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for n in nilai_jilid %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ n[0] }}</td>
+          <td>{{ n[1] }}</td>
+          <td>{{ n[2] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="mt-3">
+      <b>Rata-rata Nilai:</b> {{ "%.2f"|format(rata_rata) }}
+    </div>
+
+    <div class="mt-5 text-end">
+      <p><b>Wali Kelas</b></p>
+      <br><br>
+      <p>( {{ murid[3] }} )</p>
+    </div>
+  </div>
+  <div class="card-footer d-flex justify-content-end">
+    <a href="{{ url_for('cetak_rapot', rapot_id=rapot_id) }}" class="btn btn-success">📥 Cetak PDF</a>
+  </div>
+</div>

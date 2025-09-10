@@ -3,6 +3,12 @@ import psycopg2, psycopg2.extras
 import os
 from dotenv import load_dotenv
 
+from flask import Flask, render_template, request, redirect, url_for, send_file
+import psycopg2, io
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from datetime import date
+
 # Load environment dari file .env
 load_dotenv()
 
@@ -380,6 +386,124 @@ def tambah_mapel():
     return redirect(request.referrer)
 
 
+
+# ================= RAPOT ================= #
+
+@app.route("/rapot/<int:murid_id>/<int:jilid>")
+def rapot(murid_id, jilid):
+    conn = get_db()
+    cur = conn.cursor()
+
+    # ambil identitas murid
+    cur.execute("SELECT id, nama, kelas, wali_kelas FROM murid WHERE id=%s", (murid_id,))
+    murid = cur.fetchone()
+
+    # ambil nilai mapel utk jilid tsb
+    cur.execute("""
+        SELECT m.nama, n.nilai, n.diskripsi
+        FROM nilai n
+        JOIN mapel m ON n.mapel_id = m.id
+        WHERE n.murid_id=%s AND n.jilid=%s
+    """, (murid_id, jilid))
+    nilai_jilid = cur.fetchall()
+
+    # hitung rata-rata
+    if nilai_jilid:
+        rata_rata = sum([n[1] for n in nilai_jilid]) / len(nilai_jilid)
+    else:
+        rata_rata = 0
+
+    # simpan ke tabel rapot (jika belum ada)
+    cur.execute("SELECT id FROM rapot WHERE murid_id=%s AND jilid=%s", (murid_id, jilid))
+    ada = cur.fetchone()
+    if not ada:
+        cur.execute("INSERT INTO rapot (murid_id, jilid, rata_rata, tanggal) VALUES (%s, %s, %s, %s) RETURNING id",
+                    (murid_id, jilid, rata_rata, date.today()))
+        rapot_id = cur.fetchone()[0]
+        conn.commit()
+    else:
+        rapot_id = ada[0]
+
+    cur.close()
+    conn.close()
+
+    return render_template("rapot.html", murid=murid, nilai_jilid=nilai_jilid, rata_rata=rata_rata, jilid=jilid, rapot_id=rapot_id)
+
+# ================= CETAK RAPOT ================= #
+
+@app.route("/rapot/cetak/<int:rapot_id>")
+def cetak_rapot(rapot_id):
+    conn = get_db()
+    cur = conn.cursor()
+
+    # ambil rapot + murid
+    cur.execute("""
+        SELECT r.jilid, r.tanggal, r.rata_rata,
+               m.nama, m.kelas, m.wali_kelas, m.id
+        FROM rapot r
+        JOIN murid m ON r.murid_id = m.id
+        WHERE r.id=%s
+    """, (rapot_id,))
+    rapot = cur.fetchone()
+
+    # ambil nilai
+    cur.execute("""
+        SELECT mp.nama, n.nilai, n.diskripsi
+        FROM nilai n
+        JOIN mapel mp ON n.mapel_id=mp.id
+        WHERE n.murid_id=%s AND n.jilid=%s
+    """, (rapot[6], rapot[0]))
+    nilai_jilid = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+
+    # judul
+    c.setFont("Helvetica-Bold", 16)
+    c.drawCentredString(width/2, height-50, f"RAPOR JILID {rapot[0]}")
+
+    # identitas
+    c.setFont("Helvetica", 12)
+    c.drawString(50, height-100, f"Nama: {rapot[3]}")
+    c.drawString(50, height-120, f"Kelas: {rapot[4]}")
+    c.drawString(50, height-140, f"Wali Kelas: {rapot[5]}")
+    c.drawString(50, height-160, f"Tanggal: {rapot[1].strftime('%d-%m-%Y')}")
+
+    # tabel nilai
+    y = height-200
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, "Mata Pelajaran")
+    c.drawString(250, y, "Nilai")
+    c.drawString(320, y, "Deskripsi")
+
+    c.setFont("Helvetica", 11)
+    for mp, nilai, desk in nilai_jilid:
+        y -= 20
+        c.drawString(50, y, mp)
+        c.drawString(250, y, str(nilai))
+        c.drawString(320, y, desk[:40])  # potong biar rapi
+
+    # rata-rata
+    y -= 40
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, y, f"Rata-rata: {rapot[2]:.2f}")
+
+    # tanda tangan
+    y -= 100
+    c.setFont("Helvetica", 12)
+    c.drawRightString(width-50, y, f"( {rapot[5]} )")
+
+    c.showPage()
+    c.save()
+
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True,
+                     download_name=f"rapot_jilid_{rapot[0]}.pdf",
+                     mimetype='application/pdf')
 
 # ================= RUN ================= #
 
