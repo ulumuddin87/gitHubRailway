@@ -449,7 +449,7 @@ def rapot(murid_id, jilid):
 # ================= CETAK RAPOT ================= #
 
 @app.route("/rapot/<int:murid_id>/<int:jilid>")
-def rapot(murid_id, jilid):
+def cetak_rapot(murid_id, jilid):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
