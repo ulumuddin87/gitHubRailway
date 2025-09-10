@@ -1,31 +1,43 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <div class="container mt-4">
-    <h2 class="text-center mb-4">LAPORAN HASIL BELAJAR</h2>
-    <h4 class="text-center">Jilid {{ jilid }}</h4>
-
-    <div class="card p-4 mb-4">
-        <p><b>Nama Murid:</b> {{ murid.nama }}</p>
-        <p><b>Kelas:</b> {{ murid.kelas }}</p>
-        <p><b>Wali Kelas:</b> {{ murid.wali_kelas }}</p>
+    <div class="text-center mb-4">
+        <h3><b>LAPORAN HASIL BELAJAR</b></h3>
+        <h5>Jilid {{ jilid }}</h5>
     </div>
 
+    <!-- Identitas Murid -->
+    <table class="table table-borderless w-75 mx-auto mb-4">
+        <tr>
+            <td><b>Nama</b></td>
+            <td>: {{ murid.nama }}</td>
+        </tr>
+        <tr>
+            <td><b>Kelas</b></td>
+            <td>: {{ murid.kelas }}</td>
+        </tr>
+        <tr>
+            <td><b>Wali Kelas</b></td>
+            <td>: {{ murid.wali_kelas }}</td>
+        </tr>
+    </table>
+
+    <!-- Tabel Nilai per Kategori -->
     {% for kategori, daftar in kategori_mapel.items() %}
-    <h5 class="mt-4">{{ kategori }}</h5>
+    <h5 class="mt-4"><b>{{ kategori }}</b></h5>
     <table class="table table-bordered">
         <thead class="table-light">
             <tr>
-                <th style="width: 30%">Mata Pelajaran</th>
-                <th style="width: 10%" class="text-center">Nilai</th>
-                <th style="width: 60%">Deskripsi</th>
+                <th style="width: 25%;">Mata Pelajaran</th>
+                <th style="width: 10%;">Nilai</th>
+                <th style="width: 65%;">Deskripsi</th>
             </tr>
         </thead>
         <tbody>
             {% for mp in daftar %}
             <tr>
                 <td>{{ mp }}</td>
-                <td class="text-center">
+                <td>
                     {% if mp in nilai_dict %}
                         {{ nilai_dict[mp][0] }}
                     {% else %}
@@ -45,27 +57,26 @@
     </table>
     {% endfor %}
 
-    <div class="mt-5 d-flex justify-content-between">
-        <div>
-            <p><b>Mengetahui,</b></p>
+    <!-- Tombol Cetak PDF -->
+    <div class="text-center mt-4">
+        <a href="{{ url_for('cetak_rapot', rapot_id=rapot_id) }}" class="btn btn-success">
+            Cetak Rapot PDF
+        </a>
+    </div>
+
+    <!-- Tanda Tangan -->
+    <div class="row mt-5">
+        <div class="col text-center">
+            <p>Mengetahui,</p>
             <p>Wali Kelas</p>
             <br><br>
             <p>( {{ murid.wali_kelas }} )</p>
         </div>
-        <div class="text-end">
-            <p><b>Peserta Didik,</b></p>
-            <br><br>
+        <div class="col text-center">
+            <p>Peserta Didik,</p>
+            <br><br><br>
             <p>( {{ murid.nama }} )</p>
         </div>
     </div>
 </div>
-
-
-
-  <div class="d-flex justify-content-between mt-4">
-    <a href="{{ url_for('data_murid') }}" class="btn btn-secondary">⬅ Kembali</a>
-    <a href="{{ url_for('cetak_rapot', rapot_id=1) }}" class="btn btn-success" target="_blank">⬇ Download PDF</a>
-  </div>
-</div>
-
 {% endblock %}

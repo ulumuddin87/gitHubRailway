@@ -393,15 +393,14 @@ def tambah_mapel():
     flash(f"✅ Mapel '{nama}' berhasil ditambahkan!", "success")
     return redirect(request.referrer)
 
-
 # ================= RAPOT ================= #
 
 @app.route("/rapot/<int:murid_id>/<int:jilid>")
 def rapot(murid_id, jilid):
-    conn = get_db_connection()   # ganti get_db -> get_db_connection
-    cur = conn.cursor()
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-   # Data murid
+    # Data murid
     cur.execute("SELECT id, nama, kelas, wali_kelas FROM murid WHERE id=%s", (murid_id,))
     murid = cur.fetchone()
 
@@ -426,17 +425,21 @@ def rapot(murid_id, jilid):
     # Ubah hasil query ke dict
     nilai_dict = {row["nama"]: (row["nilai"], row["diskripsi"]) for row in nilai_jilid}
 
-    return render_template("rapot.html",
-                           murid=murid,
-                           jilid=jilid,
-                           kategori_mapel=kategori_mapel,
-                           nilai_dict=nilai_dict)
+    return render_template(
+        "rapot.html",
+        murid=murid,
+        jilid=jilid,
+        kategori_mapel=kategori_mapel,
+        nilai_dict=nilai_dict
+    )
+
 
 # ================= CETAK RAPOT ================= #
+
 @app.route("/rapot/cetak/<int:rapot_id>")
 def cetak_rapot(rapot_id):
     conn = get_db_connection()
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Ambil rapot + murid
     cur.execute("""
@@ -459,19 +462,19 @@ def cetak_rapot(rapot_id):
         FROM nilai n
         JOIN mapel mp ON n.mapel_id=mp.id
         WHERE n.murid_id=%s AND n.jilid=%s
-    """, (rapot[6], rapot[0]))
+    """, (rapot["id"], rapot["jilid"]))
     nilai_jilid = cur.fetchall()
     cur.close()
     conn.close()
 
     # Format dict
-    nilai_dict = {mp: (nilai, desk) for mp, nilai, desk in nilai_jilid}
+    nilai_dict = {row["nama"]: (row["nilai"], row["diskripsi"]) for row in nilai_jilid}
 
     # Definisi kategori mapel
     kategori_mapel = {
-        "BTQ": ["Bacaan", "Menulis", "Hafalan"],
-        "Diniyah": ["Fiqih", "Aqidah", "Akhlaq", "Sejarah Islam"],
-        "Praktek": ["Praktek Ibadah", "Kehadiran"]
+        "BTQ": ["Kehadiran", "Membaca Jilid", "Hafalan materi"],
+        "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid", "Bahasa Arab", "Pego", "Imla’/Khot", "Fiqih"],
+        "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
     }
 
     # --- Generate PDF ---
@@ -482,14 +485,14 @@ def cetak_rapot(rapot_id):
 
     # Judul
     elements.append(Paragraph(f"<b>LAPORAN HASIL BELAJAR</b>", styles["Title"]))
-    elements.append(Paragraph(f"Jilid {rapot[0]}", styles["Heading2"]))
+    elements.append(Paragraph(f"Jilid {rapot['jilid']}", styles["Heading2"]))
     elements.append(Spacer(1, 12))
 
     # Identitas murid
-    elements.append(Paragraph(f"<b>Nama:</b> {rapot[3]}", styles["Normal"]))
-    elements.append(Paragraph(f"<b>Kelas:</b> {rapot[4]}", styles["Normal"]))
-    elements.append(Paragraph(f"<b>Wali Kelas:</b> {rapot[5]}", styles["Normal"]))
-    elements.append(Paragraph(f"<b>Tanggal:</b> {rapot[1].strftime('%d-%m-%Y')}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Nama:</b> {rapot['nama']}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Kelas:</b> {rapot['kelas']}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Wali Kelas:</b> {rapot['wali_kelas']}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Tanggal:</b> {rapot['tanggal'].strftime('%d-%m-%Y')}", styles["Normal"]))
     elements.append(Spacer(1, 12))
 
     # Tabel per kategori
@@ -513,18 +516,18 @@ def cetak_rapot(rapot_id):
         elements.append(Spacer(1, 12))
 
     # Rata-rata
-    elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot[2]:.2f}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", styles["Normal"]))
     elements.append(Spacer(1, 40))
 
     # Tanda tangan
     elements.append(Paragraph(f"Mengetahui,", styles["Normal"]))
     elements.append(Paragraph(f"Wali Kelas", styles["Normal"]))
     elements.append(Spacer(1, 40))
-    elements.append(Paragraph(f"( {rapot[5]} )", styles["Normal"]))
+    elements.append(Paragraph(f"( {rapot['wali_kelas']} )", styles["Normal"]))
     elements.append(Spacer(1, 40))
     elements.append(Paragraph(f"Peserta Didik,", styles["Normal"]))
     elements.append(Spacer(1, 40))
-    elements.append(Paragraph(f"( {rapot[3]} )", styles["Normal"]))
+    elements.append(Paragraph(f"( {rapot['nama']} )", styles["Normal"]))
 
     doc.build(elements)
 
@@ -532,10 +535,9 @@ def cetak_rapot(rapot_id):
     return send_file(
         buffer,
         as_attachment=True,
-        download_name=f"rapot_jilid_{rapot[0]}.pdf",
+        download_name=f"rapot_jilid_{rapot['jilid']}.pdf",
         mimetype="application/pdf"
     )
-
 
 
 # ================= RUN ================= #
