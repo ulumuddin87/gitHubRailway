@@ -453,11 +453,11 @@ def cetak_rapot(murid_id, jilid):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # ambil identitas murid
+    # Data murid
     cur.execute("SELECT id, nama, kelas, wali_kelas FROM murid WHERE id=%s", (murid_id,))
     murid = cur.fetchone()
 
-    # ambil nilai mapel utk jilid tsb
+    # Ambil nilai mapel
     cur.execute("""
         SELECT m.nama, n.nilai, n.diskripsi
         FROM nilai n
@@ -465,17 +465,17 @@ def cetak_rapot(murid_id, jilid):
         WHERE n.murid_id=%s AND n.jilid=%s
     """, (murid_id, jilid))
     nilai_jilid = cur.fetchall()
-
     cur.close()
     conn.close()
 
-    # mapping kategori
+    # Struktur kategori mapel
     kategori_mapel = {
         "BTQ": ["Kehadiran", "Membaca Jilid", "Hafalan materi"],
         "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid", "Bahasa Arab", "Pego", "Imla’/Khot", "Fiqih"],
         "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
     }
 
+    # Ubah nilai_jilid ke dict {nama_mapel: (nilai, deskripsi)}
     nilai_dict = {row["nama"]: (row["nilai"], row["diskripsi"]) for row in nilai_jilid}
 
     return render_template("rapot.html",
@@ -483,6 +483,7 @@ def cetak_rapot(murid_id, jilid):
                            jilid=jilid,
                            kategori_mapel=kategori_mapel,
                            nilai_dict=nilai_dict)
+
 
 # ================= RUN ================= #
 
