@@ -401,59 +401,7 @@ def rapot(murid_id, jilid):
     conn = get_db_connection()   # ganti get_db -> get_db_connection
     cur = conn.cursor()
 
-    # ambil identitas murid
-    cur.execute("SELECT id, nama, kelas, wali_kelas FROM murid WHERE id=%s", (murid_id,))
-    murid = cur.fetchone()
-
-    # ambil nilai mapel utk jilid tsb
-    cur.execute("""
-        SELECT m.nama, n.nilai, n.diskripsi
-        FROM nilai n
-        JOIN mapel m ON n.mapel_id = m.id
-        WHERE n.murid_id=%s AND n.jilid=%s
-    """, (murid_id, jilid))
-    nilai_jilid = cur.fetchall()
-
-    # hitung rata-rata
-    if nilai_jilid:
-        rata_rata = sum([n[1] for n in nilai_jilid]) / len(nilai_jilid)
-    else:
-        rata_rata = 0
-
-    # simpan ke tabel rapot (jika belum ada)
-    cur.execute("SELECT id FROM rapot WHERE murid_id=%s AND jilid=%s", (murid_id, jilid))
-    ada = cur.fetchone()
-    if not ada:
-        cur.execute("""
-            INSERT INTO rapot (murid_id, jilid, rata_rata, tanggal) 
-            VALUES (%s, %s, %s, %s) RETURNING id
-        """, (murid_id, jilid, rata_rata, date.today()))
-        rapot_id = cur.fetchone()[0]
-        conn.commit()
-    else:
-        rapot_id = ada[0]
-
-    cur.close()
-    conn.close()
-
-    return render_template(
-        "rapot.html",
-        murid=murid,
-        nilai_jilid=nilai_jilid,
-        rata_rata=rata_rata,
-        jilid=jilid,
-        rapot_id=rapot_id
-    )
-
-
-# ================= CETAK RAPOT ================= #
-
-@app.route("/rapot/<int:murid_id>/<int:jilid>")
-def cetak_rapot(murid_id, jilid):
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
-    # Data murid
+   # Data murid
     cur.execute("SELECT id, nama, kelas, wali_kelas FROM murid WHERE id=%s", (murid_id,))
     murid = cur.fetchone()
 
@@ -475,7 +423,7 @@ def cetak_rapot(murid_id, jilid):
         "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
     }
 
-    # Ubah nilai_jilid ke dict {nama_mapel: (nilai, deskripsi)}
+    # Ubah hasil query ke dict
     nilai_dict = {row["nama"]: (row["nilai"], row["diskripsi"]) for row in nilai_jilid}
 
     return render_template("rapot.html",
@@ -483,6 +431,111 @@ def cetak_rapot(murid_id, jilid):
                            jilid=jilid,
                            kategori_mapel=kategori_mapel,
                            nilai_dict=nilai_dict)
+
+# ================= CETAK RAPOT ================= #
+@app.route("/rapot/cetak/<int:rapot_id>")
+def cetak_rapot(rapot_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Ambil rapot + murid
+    cur.execute("""
+        SELECT r.jilid, r.tanggal, r.rata_rata,
+               m.nama, m.kelas, m.wali_kelas, m.id
+        FROM rapot r
+        JOIN murid m ON r.murid_id = m.id
+        WHERE r.id=%s
+    """, (rapot_id,))
+    rapot = cur.fetchone()
+
+    if not rapot:
+        cur.close()
+        conn.close()
+        return "Rapot tidak ditemukan", 404
+
+    # Ambil nilai & deskripsi
+    cur.execute("""
+        SELECT mp.nama, n.nilai, n.diskripsi
+        FROM nilai n
+        JOIN mapel mp ON n.mapel_id=mp.id
+        WHERE n.murid_id=%s AND n.jilid=%s
+    """, (rapot[6], rapot[0]))
+    nilai_jilid = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    # Format dict
+    nilai_dict = {mp: (nilai, desk) for mp, nilai, desk in nilai_jilid}
+
+    # Definisi kategori mapel
+    kategori_mapel = {
+        "BTQ": ["Bacaan", "Menulis", "Hafalan"],
+        "Diniyah": ["Fiqih", "Aqidah", "Akhlaq", "Sejarah Islam"],
+        "Praktek": ["Praktek Ibadah", "Kehadiran"]
+    }
+
+    # --- Generate PDF ---
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # Judul
+    elements.append(Paragraph(f"<b>LAPORAN HASIL BELAJAR</b>", styles["Title"]))
+    elements.append(Paragraph(f"Jilid {rapot[0]}", styles["Heading2"]))
+    elements.append(Spacer(1, 12))
+
+    # Identitas murid
+    elements.append(Paragraph(f"<b>Nama:</b> {rapot[3]}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Kelas:</b> {rapot[4]}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Wali Kelas:</b> {rapot[5]}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Tanggal:</b> {rapot[1].strftime('%d-%m-%Y')}", styles["Normal"]))
+    elements.append(Spacer(1, 12))
+
+    # Tabel per kategori
+    for kategori, daftar in kategori_mapel.items():
+        elements.append(Paragraph(f"<b>{kategori}</b>", styles["Heading3"]))
+
+        data = [["Mata Pelajaran", "Nilai", "Deskripsi"]]
+        for mp in daftar:
+            if mp in nilai_dict:
+                data.append([mp, str(nilai_dict[mp][0]), nilai_dict[mp][1]])
+            else:
+                data.append([mp, "-", "Belum ada deskripsi"])
+
+        table = Table(data, colWidths=[120, 50, 280])
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 12))
+
+    # Rata-rata
+    elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot[2]:.2f}", styles["Normal"]))
+    elements.append(Spacer(1, 40))
+
+    # Tanda tangan
+    elements.append(Paragraph(f"Mengetahui,", styles["Normal"]))
+    elements.append(Paragraph(f"Wali Kelas", styles["Normal"]))
+    elements.append(Spacer(1, 40))
+    elements.append(Paragraph(f"( {rapot[5]} )", styles["Normal"]))
+    elements.append(Spacer(1, 40))
+    elements.append(Paragraph(f"Peserta Didik,", styles["Normal"]))
+    elements.append(Spacer(1, 40))
+    elements.append(Paragraph(f"( {rapot[3]} )", styles["Normal"]))
+
+    doc.build(elements)
+
+    buffer.seek(0)
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=f"rapot_jilid_{rapot[0]}.pdf",
+        mimetype="application/pdf"
+    )
+
 
 
 # ================= RUN ================= #
