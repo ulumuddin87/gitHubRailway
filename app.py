@@ -503,6 +503,17 @@ def cetak_rapot(rapot_id):
     elements = []
     styles = getSampleStyleSheet()
 
+     # === KOP SURAT ===
+    elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", styles["Title"]))
+    elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", styles["Heading1"]))
+    elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", styles["Normal"]))
+    elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726", styles["Normal"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Table([[" "]*1], colWidths=[450], style=[
+        ("LINEABOVE", (0,0), (-1,0), 1, colors.black)
+    ]))
+    elements.append(Spacer(1, 12))
+
     # Judul
     elements.append(Paragraph(f"<b>LAPORAN HASIL BELAJAR</b>", styles["Title"]))
     elements.append(Paragraph(f"Jilid {rapot['jilid']}", styles["Heading2"]))
