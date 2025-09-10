@@ -459,6 +459,17 @@ def rapot(murid_id, jilid):
 def cetak_rapot(rapot_id):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+# Kop surat
+c.setFont("Helvetica-Bold", 14)
+c.drawCentredString(width/2, height-50, "TAMAN PENDIDIKAN AL QUR'AN")
+c.setFont("Helvetica-Bold", 16)
+c.drawCentredString(width/2, height-70, "“MAFATIHUL HUDA”")
+c.setFont("Helvetica", 12)
+c.drawCentredString(width/2, height-90, "BAKALANRAYUNG KECAMATAN KUDU – JOMBANG")
+c.drawCentredString(width/2, height-110, "Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726")
+
+# Garis pemisah
+c.line(50, height-120, width-50, height-120)
 
     # Ambil rapot + murid
     cur.execute("""
