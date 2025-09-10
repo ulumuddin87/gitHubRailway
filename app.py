@@ -448,29 +448,24 @@ def rapot(murid_id, jilid):
 
 # ================= CETAK RAPOT ================= #
 
-@app.route("/rapot/cetak/<int:rapot_id>")
-def cetak_rapot(rapot_id):
+@app.route("/rapot/<int:murid_id>/<int:jilid>")
+def rapot(murid_id, jilid):
     conn = get_db_connection()
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # ambil rapot + murid
-    cur.execute("""
-        SELECT r.jilid, r.tanggal, r.rata_rata,
-               m.nama, m.kelas, m.wali_kelas, m.id
-        FROM rapot r
-        JOIN murid m ON r.murid_id = m.id
-        WHERE r.id=%s
-    """, (rapot_id,))
-    rapot = cur.fetchone()
+    # ambil identitas murid
+    cur.execute("SELECT id, nama, kelas, wali_kelas FROM murid WHERE id=%s", (murid_id,))
+    murid = cur.fetchone()
 
-    # ambil semua nilai utk jilid tsb
+    # ambil nilai mapel utk jilid tsb
     cur.execute("""
-        SELECT mp.nama, n.nilai, n.diskripsi
+        SELECT m.nama, n.nilai, n.diskripsi
         FROM nilai n
-        JOIN mapel mp ON n.mapel_id=mp.id
+        JOIN mapel m ON n.mapel_id = m.id
         WHERE n.murid_id=%s AND n.jilid=%s
-    """, (rapot[6], rapot[0]))
+    """, (murid_id, jilid))
     nilai_jilid = cur.fetchall()
+
     cur.close()
     conn.close()
 
@@ -481,62 +476,13 @@ def cetak_rapot(rapot_id):
         "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
     }
 
-    # bikin dict {mapel: (nilai, deskripsi)}
-    nilai_dict = {row[0]: (row[1], row[2]) for row in nilai_jilid}
+    nilai_dict = {row["nama"]: (row["nilai"], row["diskripsi"]) for row in nilai_jilid}
 
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
-    elements = []
-    styles = getSampleStyleSheet()
-
-    # header
-    elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b><br/>“MAFATIHUL HUDA”", styles['Title']))
-    elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG<br/>Nomor Statistik : 411.235.17.2074  Telp. 0857-3634-0726", styles['Normal']))
-    elements.append(Spacer(1, 12))
-
-    # identitas
-    identitas = [
-        ["Nama", f": {rapot[3]}", "Jilid", f": {rapot[0]}"],
-        ["Kelompok", f": {rapot[4]}", "Tahun Ajaran", f": {rapot[1].year}/{rapot[1].year+1}"],
-    ]
-    t_identitas = Table(identitas, colWidths=[80, 150, 80, 150])
-    elements.append(t_identitas)
-    elements.append(Spacer(1, 20))
-
-    elements.append(Paragraph("<b>LAPORAN HASIL BELAJAR SANTRI</b>", styles['Heading2']))
-    elements.append(Spacer(1, 12))
-
-    # generate tabel per kategori
-    for kategori, daftar_mapel in kategori_mapel.items():
-        data = [["NO", "MATERI", "NILAI", "DESKRIPSI"]]
-        for i, m in enumerate(daftar_mapel, start=1):
-            nilai, desk = nilai_dict.get(m, ("", ""))
-            data.append([i, m, nilai, desk])
-        t = Table(data, colWidths=[40, 180, 80, 200])
-        t.setStyle(TableStyle([("GRID", (0,0), (-1,-1), 1, colors.black)]))
-        elements.append(Paragraph(f"<b>{kategori}</b>", styles['Heading3']))
-        elements.append(t)
-        elements.append(Spacer(1, 15))
-
-    # catatan
-    elements.append(Paragraph("<b>CATATAN USTADZAH</b>", styles['Heading3']))
-    elements.append(Spacer(1, 40))
-
-    # tanda tangan
-    elements.append(Paragraph(f"Jombang, {rapot[1].strftime('%d %B %Y')}", styles['Normal']))
-    elements.append(Spacer(1, 40))
-    tanda_tangan = [
-        ["Wali Santri", "", "Ustzh. Kelompok", "", "Kepala TPQ Mafatihul Huda"],
-        ["(................)", "", f"({rapot[5]})", "", "(................)"]
-    ]
-    t_ttd = Table(tanda_tangan, colWidths=[150,50,150,50,150])
-    elements.append(t_ttd)
-
-    doc.build(elements)
-    buffer.seek(0)
-    return send_file(buffer, as_attachment=True,
-                     download_name=f"rapot_jilid_{rapot[0]}.pdf",
-                     mimetype="application/pdf")
+    return render_template("rapot.html",
+                           murid=murid,
+                           jilid=jilid,
+                           kategori_mapel=kategori_mapel,
+                           nilai_dict=nilai_dict)
 
 
 
