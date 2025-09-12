@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}Nilai Murid{% endblock %}
-{% block content %}
 
+{% block content %}
 <div class="card shadow-sm">
   <div class="card-header bg-success text-white">
-    <h5 class="mb-0">Nilai Murid - Jilid {{ murid.jilid }}</h5>
+    <h5 class="mb-0">Nilai Murid - {{ murid.nama }}</h5>
   </div>
   <div class="card-body">
     <ul>
@@ -13,30 +13,17 @@
       <li><b>Wali Kelas:</b> {{ murid.wali_kelas }}</li>
     </ul>
 
-<!-- Tahun Ajaran & Semester -->
-  <div class="row g-3 mb-3">
-    <div class="col-md-6">
-      <label for="tahun_ajaran" class="form-label">Tahun Ajaran</label>
-      <input type="text" name="tahun_ajaran" id="tahun_ajaran" 
-             placeholder="contoh: 2024/2025" class="form-control" required>
-    </div>
-    <div class="col-md-6">
-      <label for="semester" class="form-label">Semester</label>
-      <select name="semester" id="semester" class="form-select" required>
+    <!-- Pilih Semester -->
+    <div class="mb-3">
+      <label for="semester" class="form-label">Semester:</label>
+      <select name="semester" id="semester" form="formNilai" class="form-select" required>
         <option value="Ganjil">Ganjil</option>
         <option value="Genap">Genap</option>
       </select>
     </div>
-  </div>
 
-  
-    <!-- Nilai mapel --> 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="mb-0">📚 Input Nilai Mapel</h5>
-     </div>
-     
-    <!-- Form input nilai baru -->
-    <form method="POST" onsubmit="return confirmSubmit(event)">
+    <!-- Form input nilai -->
+    <form method="POST" id="formNilai" onsubmit="return confirmSubmit(event)">
       <div class="row g-3">
         {% for m in mapel_list %}
         <div class="col-md-6">
@@ -44,7 +31,7 @@
           <input type="number" name="mapel_{{ m.id }}" class="form-control" required>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Diskripsi {{ m.nama }}</label>
+          <label class="form-label">Deskripsi {{ m.nama }}</label>
           <input type="text" name="diskripsi_{{ m.id }}" class="form-control" required>
         </div>
         {% endfor %}
@@ -53,8 +40,11 @@
       <div class="d-flex justify-content-between mt-4">
         <a href="{{ url_for('data_murid') }}" class="btn btn-secondary">⬅ Kembali</a>
         <div>
+          <button type="submit" name="action" value="simpan" class="btn btn-warning">
+            💾 Simpan Sementara
+          </button>
           <button type="submit" name="action" value="upload" class="btn btn-success">
-            🚀 Upload Final
+            🚀 Upload Nilai
           </button>
         </div>
       </div>
@@ -62,57 +52,13 @@
   </div>
 </div>
 
-<!-- Modal Tambah Mapel (diluar form utama supaya tidak nested) -->
-<div class="modal fade" id="modalMapel" tabindex="-1" aria-labelledby="modalMapelLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="POST" action="{{ url_for('tambah_mapel') }}">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalMapelLabel">Tambah Mata Pelajaran</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Nama Mapel</label>
-            <input type="text" name="nama" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Deskripsi Mapel</label>
-            <textarea name="deskripsi" class="form-control" rows="3" required></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-success">💾 Simpan Mapel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Tombol Rapot -->
-<div class="mt-3">
-  <h5>📑 Rapot</h5>
-  <div class="d-flex flex-wrap gap-2">
-    {% for jilid in range(1, murid.jilid+1) %}
-      <a href="{{ url_for('rapot', murid_id=murid.id, jilid=jilid) }}" 
-         class="btn btn-outline-primary btn-sm">
-        📄 Rapot Jilid {{ jilid }}
-      </a>
-    {% endfor %}
-  </div>
-</div>
-<hr>
-
-
 <script>
 function confirmSubmit(event) {
   const action = event.submitter.value;
   if (action === "upload") {
-    return confirm("⚠️ Apakah semua nilai & diskripsi sudah benar untuk diupload?");
+    return confirm("⚠️ Apakah semua nilai & deskripsi sudah benar sebelum diupload?");
   }
   return true;
 }
 </script>
-
 {% endblock %}

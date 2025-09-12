@@ -1,38 +1,50 @@
 {% extends 'base.html' %}
-{% block title %}Riwayat Nilai - {{ murid.nama }}{% endblock %}
+{% block title %}Riwayat Nilai Murid{% endblock %}
+
 {% block content %}
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">Riwayat Nilai - {{ murid.nama }}</h5>
+  </div>
+  <div class="card-body">
+    <ul>
+      <li><b>Nama:</b> {{ murid.nama }}</li>
+      <li><b>Kelas:</b> {{ murid.kelas }}</li>
+      <li><b>Wali Kelas:</b> {{ murid.wali_kelas }}</li>
+    </ul>
 
-<h3 class="mb-3">📖 Riwayat Nilai - {{ murid.nama }}</h3>
+    {% if riwayat %}
+    <table class="table table-bordered mt-3">
+      <thead class="table-light">
+        <tr>
+          <th>No</th>
+          <th>Semester</th>
+          <th>Tahun Ajaran</th>
+          <th>Mata Pelajaran</th>
+          <th>Nilai</th>
+          <th>Deskripsi</th>
+          <th>Tanggal Input</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i, r in enumerate(riwayat, start=1) %}
+        <tr>
+          <td>{{ i }}</td>
+          <td>{{ r.semester }}</td>
+          <td>{{ r.tahun_ajaran }}</td>
+          <td>{{ r.mapel_nama }}</td>
+          <td>{{ r.nilai }}</td>
+          <td>{{ r.diskripsi }}</td>
+          <td>{{ r.created_at.strftime('%d-%m-%Y') if r.created_at else '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="text-muted mt-3">Belum ada nilai yang diinput untuk murid ini.</p>
+    {% endif %}
 
-<div class="table-responsive">
-  <table class="table table-bordered table-striped text-center align-middle">
-    <thead class="table-light">
-      <tr>
-        <th>Tahun Ajaran</th>
-        <th>Semester</th>
-        <th>Jilid</th>
-        <th>Mata Pelajaran</th>
-        <th>Nilai</th>
-        <th>Diskripsi</th>
-        <th>Tanggal</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for n in riwayat %}
-      <tr>
-        <td>{{ n.tahun_ajaran }}</td>
-        <td>{{ n.semester }}</td>
-        <td>{{ n.jilid }}</td>
-        <td>{{ n.mapel_nama }}</td>
-        <td>{{ n.nilai }}</td>
-        <td>{{ n.diskripsi }}</td>
-        <td>{{ n.created_at.strftime("%d-%m-%Y") if n.created_at else '-' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <a href="{{ url_for('data_murid') }}" class="btn btn-secondary mt-3">⬅ Kembali</a>
+  </div>
 </div>
-
-<a href="{{ url_for('data_murid') }}" class="btn btn-secondary mt-3">⬅ Kembali</a>
-
 {% endblock %}
