@@ -17,21 +17,22 @@
         <h5>Jilid {{ jilid }}</h5>
     </div>
 
-   <!-- Identitas Murid -->
-<table class="table table-borderless w-75 mx-auto mb-4" style="font-size: 15px;">
+  <!-- Identitas Murid -->
+<table class="table w-75 mx-auto mb-4" style="font-size: 15px; border-collapse: collapse;">
     <tr>
-        <td style="width: 25%;"><b>Nama Peserta Didik</b></td>
-        <td style="width: 25%;">: {{ murid.nama }}</td>
-        <td style="width: 25%;"><b>Kelas</b></td>
-        <td style="width: 25%;">: {{ murid.kelas }}</td>
+        <td style="width: 25%; border-bottom: 1px solid #000;"><b>Nama</b></td>
+        <td style="width: 25%; border-bottom: 1px solid #000;">: {{ murid.nama }}</td>
+        <td style="width: 25%; border-bottom: 1px solid #000;"><b>Kelas</b></td>
+        <td style="width: 25%; border-bottom: 1px solid #000;">: {{ murid.kelas }}</td>
     </tr>
     <tr>
-        <td><b>Wali Kelas</b></td>
-        <td>: {{ murid.wali_kelas }}</td>
-        <td><b>Tanggal</b></td>
-        <td>: {{ tanggal_cetak }}</td>
+        <td style="border-bottom: 1px solid #000;"><b>Wali Kelas</b></td>
+        <td style="border-bottom: 1px solid #000;">: {{ murid.wali_kelas }}</td>
+        <td style="border-bottom: 1px solid #000;"><b>Tanggal</b></td>
+        <td style="border-bottom: 1px solid #000;">: {{ tanggal_cetak }}</td>
     </tr>
 </table>
+
 
 
     <!-- Tabel Nilai per Kategori -->
