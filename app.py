@@ -464,7 +464,6 @@ def rapot(murid_id, jilid):
 
 
 # ================= CETAK RAPOT ================= #
-
 @app.route("/rapot/cetak/<int:rapot_id>")
 def cetak_rapot(rapot_id):
     conn = get_db_connection()
@@ -509,57 +508,64 @@ def cetak_rapot(rapot_id):
 
     # --- Generate PDF ---
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4,
-                            rightMargin=30, leftMargin=30,
-                            topMargin=30, bottomMargin=30)
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        rightMargin=40, leftMargin=40,
+        topMargin=40, bottomMargin=30
+    )
     elements = []
     styles = getSampleStyleSheet()
 
     # === KOP SURAT ===
-    kop_style = styles["Title"]
-    kop_style.alignment = 1  # Center
-    elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", kop_style))
+    title_center = styles["Title"]
+    title_center.alignment = 1
+    elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", title_center))
 
-    subkop_style = styles["Heading2"]
-    subkop_style.alignment = 1
-    elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", subkop_style))
+    subkop = styles["Heading2"]
+    subkop.alignment = 1
+    elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", subkop))
 
-    addr_style = styles["Normal"]
-    addr_style.alignment = 1
-    elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", addr_style))
-    elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726", addr_style))
-    elements.append(Spacer(1, 6))
-    elements.append(Table([[""]], colWidths=[500], style=[
-        ("LINEABOVE", (0,0), (-1,0), 2, colors.black)
+    normal_center = styles["Normal"]
+    normal_center.alignment = 1
+    elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", normal_center))
+    elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726", normal_center))
+    elements.append(Spacer(1, 8))
+    elements.append(Table([[""]], colWidths=[480], style=[
+        ("LINEABOVE", (0, 0), (-1, 0), 2, colors.black)
     ]))
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 14))
 
-    # Judul
-    title_style = styles["Heading1"]
-    title_style.alignment = 1
-    elements.append(Paragraph("<b>LAPORAN HASIL BELAJAR</b>", title_style))
-    elements.append(Paragraph(f"Jilid {rapot['jilid']}", styles["Heading2"]))
-    elements.append(Spacer(1, 12))
+    # === JUDUL ===
+    judul = styles["Heading1"]
+    judul.alignment = 1
+    elements.append(Paragraph("<b>LAPORAN HASIL BELAJAR</b>", judul))
 
-    # Identitas murid
+    subjudul = styles["Heading2"]
+    subjudul.alignment = 1
+    elements.append(Paragraph(f"Jilid {rapot['jilid']}", subjudul))
+    elements.append(Spacer(1, 20))
+
+    # === IDENTITAS MURID ===
     identitas_data = [
         ["Nama", f": {rapot['nama']}", "Kelas", f": {rapot['kelas']}"],
         ["Wali Kelas", f": {rapot['wali_kelas']}", "Tanggal",
          f": {rapot['tanggal'].strftime('%d-%m-%Y') if rapot['tanggal'] else '-'}"]
     ]
-    identitas_table = Table(identitas_data, colWidths=[80, 180, 80, 180])
+    identitas_table = Table(identitas_data, colWidths=[90, 180, 90, 180])
     identitas_table.setStyle(TableStyle([
         ("ALIGN", (0, 0), (-1, -1), "LEFT"),
         ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("FONTSIZE", (0, 0), (-1, -1), 11),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
     ]))
     elements.append(identitas_table)
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 14))
 
-    # --- Tabel per kategori ---
+    # === NILAI PER KATEGORI ===
     for kategori, daftar in kategori_mapel.items():
-        elements.append(Paragraph(f"<b>{kategori}</b>", styles["Heading3"]))
+        kategori_style = styles["Heading3"]
+        kategori_style.alignment = 0
+        elements.append(Paragraph(f"<b>{kategori}</b>", kategori_style))
 
         data = [["Mata Pelajaran", "Nilai", "Deskripsi"]]
         for mp in daftar:
@@ -568,7 +574,7 @@ def cetak_rapot(rapot_id):
             else:
                 data.append([mp, "-", "Belum ada deskripsi"])
 
-        table = Table(data, colWidths=[120, 50, 280])
+        table = Table(data, colWidths=[150, 50, 250])
         table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
@@ -578,11 +584,13 @@ def cetak_rapot(rapot_id):
         elements.append(table)
         elements.append(Spacer(1, 12))
 
-    # Rata-rata
-    elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", styles["Normal"]))
+    # === RATA-RATA ===
+    rata_style = styles["Normal"]
+    rata_style.alignment = 1
+    elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", rata_style))
     elements.append(Spacer(1, 40))
 
-    # --- Tanda tangan (3 kolom) ---
+    # === TANDA TANGAN ===
     tanda_tangan = [
         ["Kepala Madrasah", "Wali Kelas", "Peserta Didik"],
         ["", "", ""],
@@ -607,7 +615,6 @@ def cetak_rapot(rapot_id):
         download_name=f"rapot_jilid_{rapot['jilid']}.pdf",
         mimetype="application/pdf"
     )
-
 
 
 # ================= RUN ================= #
