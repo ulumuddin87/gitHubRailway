@@ -42,46 +42,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="mb-0">📚 Input Nilai Mapel</h5>
-      <!-- Tombol buka modal Tambah -->
-  <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahMapel">
-    ➕ Tambah Mapel
-  </button>
-</div>
-
-<table class="table table-bordered">
-  <thead class="table-light">
-    <tr>
-      <th style="width: 10%;">No</th>
-      <th style="width: 25%;">Nama Mapel</th>
-      <th style="width: 45%;">Deskripsi</th>
-      <th style="width: 20%;">Aksi</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for m in mapel_list %}
-    <tr>
-      <td class="text-center">{{ loop.index }}</td>
-      <td>{{ m.nama }}</td>
-      <td>{{ m.deskripsi }}</td>
-      <td class="text-center">
-        <!-- Tombol Ubah -->
-        <button type="button" class="btn btn-warning btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#modalEditMapel{{ m.id }}">
-          ✏️ Ubah
-        </button>
-        <!-- Tombol Hapus -->
-        <button type="button" class="btn btn-danger btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#modalHapusMapel{{ m.id }}">
-          🗑️ Hapus
-        </button>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
+     
     <!-- Form input nilai baru -->
     <form method="POST" onsubmit="return confirmSubmit(event)">
       <div class="row g-3">
