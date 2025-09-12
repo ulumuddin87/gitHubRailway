@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="container mt-4" style="font-family: 'Times New Roman', serif; line-height: 1.6;">
+<div class="container mt-4" style="font-family: 'Calibri', serif; line-height: 1.6;">
     <!-- Kop Surat -->
     <div class="text-center mb-4">
         <h4 class="mb-0"><b>TAMAN PENDIDIKAN AL-QUR'AN</b></h4>
         <h2 class="mb-0"><b>“MAFATIHUL HUDA”</b></h2>
-        <p class="mb-0">Bakalanrayung, Kecamatan Kudu – Kabupaten Jombang</p>
+        <p class="mb-0">Desa Bakalanrayung Kecamatan Kudu Kabupaten Jombang Provinsi Jawa Timur</p>
         <p class="mb-0">Nomor Statistik : 411.235.17.2074 | Telp. 0857-3634-0726</p>
         <hr style="border: 2px solid black;">
     </div>
@@ -15,13 +15,12 @@
     <div class="text-center mb-4">
         <h3><b>LAPORAN HASIL BELAJAR</b></h3>
         <h5>Jilid {{ jilid }}</h5>
-        <h6><i>Tahun Ajaran {{ tahun_ajaran }}</i></h6>
     </div>
 
     <!-- Identitas Murid -->
     <table class="table table-borderless w-75 mx-auto mb-4">
         <tr>
-            <td style="width: 30%;"><b>Nama Peserta Didik</b></td>
+            <td style="width: 30%;"><b>Nama</b></td>
             <td>: {{ murid.nama }}</td>
         </tr>
         <tr>
@@ -82,8 +81,7 @@
     <!-- Tanda Tangan -->
     <div class="row mt-5">
         <div class="col text-center">
-            <p>Mengetahui,</p>
-            <p><b>Kepala Madrasah</b></p>
+            <p>Kepala Madrasah</p>
             <br><br><br>
             <p>( {{ kepala_madrasah }} )</p>
         </div>
