@@ -535,7 +535,7 @@ def cetak_rapot(rapot_id):
     elements.append(Paragraph(f"Jilid {rapot['jilid']}", heading2))
     elements.append(Spacer(1, 12))
 
-    # === Identitas Murid (mirip HTML) ===
+# === Identitas Murid (mirip HTML) ===
     identitas_data = [
         ["Nama", f": {rapot['nama']}", "Kelas", f": {rapot['kelas']}"],
         ["Wali Kelas", f": {rapot['wali_kelas']}", "Tanggal",
@@ -584,9 +584,7 @@ def cetak_rapot(rapot_id):
     elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", normal_center))
     elements.append(Spacer(1, 40))
 
-    t_table)
-
-   # === Tanda Tangan (3 kolom, center) ===
+    # === Tanda Tangan (3 kolom, center) ===
     kepala_madrasah = "Ustadz Ahmad"  # 👉 bisa diambil dari DB
     tanda_tangan = [
         ["Kepala Madrasah", "Wali Kelas", "Peserta Didik"],
@@ -601,7 +599,9 @@ def cetak_rapot(rapot_id):
         ("FONTSIZE", (0, 0), (-1, -1), 11),
         ("TOPPADDING", (0, 0), (-1, -1), 6),
     ]))
-    elements.append(t doc.build(elements)
+    elements.append(tt_table)
+
+    doc.build(elements)
 
     buffer.seek(0)
     return send_file(
