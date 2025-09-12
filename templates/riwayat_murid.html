@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Riwayat Nilai - {{ murid.nama }}{% endblock %}
+{% block content %}
+
+<h3 class="mb-3">📖 Riwayat Nilai - {{ murid.nama }}</h3>
+
+<div class="table-responsive">
+  <table class="table table-bordered table-striped text-center align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Jilid</th>
+        <th>Mata Pelajaran</th>
+        <th>Nilai</th>
+        <th>Diskripsi</th>
+        <th>Tanggal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for n in riwayat %}
+      <tr>
+        <td>{{ n.jilid }}</td>
+        <td>{{ n.mapel_nama }}</td>
+        <td>{{ n.nilai }}</td>
+        <td>{{ n.diskripsi }}</td>
+        <td>{{ n.created_at.strftime("%d-%m-%Y") if n.created_at else '-' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<a href="{{ url_for('data_murid') }}" class="btn btn-secondary mt-3">⬅ Kembali</a>
+
+{% endblock %}

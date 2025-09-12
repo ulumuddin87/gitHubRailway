@@ -359,24 +359,33 @@ def nilai_murid(id):
             conn.close()
             return redirect(url_for("data_murid"))
 
-    # Ambil riwayat nilai murid
-    cur.execute(
-        """
-        SELECT n.*, m.nama as mapel_nama
-        FROM nilai n
-        JOIN mapel m ON n.mapel_id = m.id
-        WHERE murid_id=%s
-        ORDER BY jilid ASC, mapel_id ASC
-        """,
-        (id,),
-    )
+   
+
+# ================= RIWAYAT NILAI MURID ================= #
+@app.route("/murid/riwayat/<int:id>")
+def riwayat_murid(id):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Data murid
+    cur.execute("SELECT * FROM murid WHERE id=%s", (id,))
+    murid = cur.fetchone()
+
+    # Riwayat nilai lengkap (per mapel per jilid)
+    cur.execute("""
+        SELECT r.jilid, mp.nama AS mapel_nama, n.nilai, n.diskripsi, r.tanggal AS created_at
+        FROM rapot r
+        JOIN nilai n ON r.murid_id = n.murid_id AND r.jilid = n.jilid
+        JOIN mapel mp ON n.mapel_id = mp.id
+        WHERE r.murid_id = %s
+        ORDER BY r.jilid ASC, mp.nama ASC
+    """, (id,))
     riwayat = cur.fetchall()
 
     cur.close()
     conn.close()
-    return render_template(
-        "nilai_murid.html", murid=murid, mapel_list=mapel_list, riwayat=riwayat
-    )
+
+    return render_template("riwayat_murid.html", murid=murid, riwayat=riwayat)
 
 
 

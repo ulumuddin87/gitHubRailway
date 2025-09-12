@@ -15,33 +15,10 @@
 
     <!-- Riwayat nilai -->
     <h5 class="mt-4">📖 Riwayat Nilai</h5>
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped text-center align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Jilid</th>
-            <th>Mata Pelajaran</th>
-            <th>Nilai</th>
-            <th>Diskripsi</th>
-            <th>Tanggal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for n in riwayat %}
-          <tr>
-            <td>{{ n.jilid }}</td>
-            <td>{{ n.mapel_nama }}</td>
-            <td>{{ n.nilai }}</td>
-            <td>{{ n.diskripsi }}</td>
-            <td>{{ n.created_at.strftime("%d-%m-%Y") }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
+    
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="mb-0">📚 Input Nilai Mapel</h5>
+     </div>
      
     <!-- Form input nilai baru -->
     <form method="POST" onsubmit="return confirmSubmit(event)">
