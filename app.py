@@ -469,8 +469,8 @@ def cetak_rapot(rapot_id):
 
     # Ambil rapot + murid
     cur.execute("""
-        SELECT r.id, r.jilid, r.tanggal, r.rata_rata,
-               m.id as murid_id, m.nama, m.kelas, m.wali_kelas
+        SELECT r.jilid, r.tanggal, r.rata_rata,
+               m.nama, m.kelas, m.wali_kelas, m.id
         FROM rapot r
         JOIN murid m ON r.murid_id = m.id
         WHERE r.id=%s
@@ -488,7 +488,7 @@ def cetak_rapot(rapot_id):
         FROM nilai n
         JOIN mapel mp ON n.mapel_id=mp.id
         WHERE n.murid_id=%s AND n.jilid=%s
-    """, (rapot["murid_id"], rapot["jilid"]))
+    """, (rapot["id"], rapot["jilid"]))
     nilai_jilid = cur.fetchall()
     cur.close()
     conn.close()
@@ -499,126 +499,103 @@ def cetak_rapot(rapot_id):
     # Definisi kategori mapel
     kategori_mapel = {
         "BTQ": ["Kehadiran", "Bacaan", "Hafalan"],
-        "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid", "Bahasa Arab", "Pego", "Imla’/Khot", "Fiqih"],
+        "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid",
+                    "Bahasa Arab", "Pego", "Imla’/Khot", "Fiqih"],
         "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
     }
 
     # --- Generate PDF ---
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+                            rightMargin=30, leftMargin=30,
+                            topMargin=30, bottomMargin=30)
     elements = []
     styles = getSampleStyleSheet()
 
+    # === KOP SURAT ===
+    kop_style = styles["Title"]
+    kop_style.alignment = 1  # Center
+    elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", kop_style))
 
-# === STYLE CUSTOM ===
-style_center_bold = ParagraphStyle(
-    name="CenterBold",
-    parent=styles["Normal"],
-    alignment=TA_CENTER,
-    fontSize=14,
-    leading=16,
-    spaceAfter=4,
-    spaceBefore=4,
-    bold=True
-)
+    subkop_style = styles["Heading2"]
+    subkop_style.alignment = 1
+    elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", subkop_style))
 
-style_center_big = ParagraphStyle(
-    name="CenterBig",
-    parent=styles["Normal"],
-    alignment=TA_CENTER,
-    fontSize=16,
-    leading=18,
-    spaceAfter=6,
-    bold=True
-)
+    addr_style = styles["Normal"]
+    addr_style.alignment = 1
+    elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", addr_style))
+    elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726", addr_style))
+    elements.append(Spacer(1, 6))
+    elements.append(Table([[""]], colWidths=[500], style=[
+        ("LINEABOVE", (0,0), (-1,0), 2, colors.black)
+    ]))
+    elements.append(Spacer(1, 12))
 
-style_center = ParagraphStyle(
-    name="Center",
-    parent=styles["Normal"],
-    alignment=TA_CENTER,
-    fontSize=11,
-    leading=13,
-)
+    # Judul
+    title_style = styles["Heading1"]
+    title_style.alignment = 1
+    elements.append(Paragraph("<b>LAPORAN HASIL BELAJAR</b>", title_style))
+    elements.append(Paragraph(f"Jilid {rapot['jilid']}", styles["Heading2"]))
+    elements.append(Spacer(1, 12))
 
-# === KOP SURAT ===
-elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", style_center_bold))
-elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", style_center_big))
-elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", style_center))
-elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726", style_center))
-elements.append(Spacer(1, 6))
-elements.append(Table([[""]], colWidths=[17*cm], style=[
-    ("LINEABOVE", (0,0), (-1,0), 1, colors.black)
-]))
-elements.append(Spacer(1, 12))
+    # Identitas murid
+    identitas_data = [
+        ["Nama", f": {rapot['nama']}", "Kelas", f": {rapot['kelas']}"],
+        ["Wali Kelas", f": {rapot['wali_kelas']}", "Tanggal",
+         f": {rapot['tanggal'].strftime('%d-%m-%Y') if rapot['tanggal'] else '-'}"]
+    ]
+    identitas_table = Table(identitas_data, colWidths=[80, 180, 80, 180])
+    identitas_table.setStyle(TableStyle([
+        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(identitas_table)
+    elements.append(Spacer(1, 12))
 
-# === JUDUL ===
-elements.append(Paragraph("<b>LAPORAN HASIL BELAJAR</b>", style_center_big))
-elements.append(Paragraph(f"Jilid {rapot['jilid']}", style_center))
-elements.append(Spacer(1, 12))
+    # --- Tabel per kategori ---
+    for kategori, daftar in kategori_mapel.items():
+        elements.append(Paragraph(f"<b>{kategori}</b>", styles["Heading3"]))
 
-# === IDENTITAS MURID ===
-data_identitas = [
-    ["Nama", f": {rapot['nama']}", "Kelas", f": {rapot['kelas']}"],
-    ["Wali Kelas", f": {rapot['wali_kelas']}", "Tanggal", f": {rapot['tanggal'].strftime('%d-%m-%Y') if rapot['tanggal'] else '-'}"],
-]
-
-table_identitas = Table(data_identitas, colWidths=[3*cm, 6*cm, 3*cm, 5*cm])
-table_identitas.setStyle(TableStyle([
-    ("ALIGN", (0,0), (-1,-1), "LEFT"),
-    ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
-    ("FONTNAME", (0,0), (-1,-1), "Helvetica"),
-    ("FONTSIZE", (0,0), (-1,-1), 11),
-    ("BOTTOMPADDING", (0,0), (-1,-1), 4),
-]))
-elements.append(table_identitas)
-elements.append(Spacer(1, 12))
-
-
-    # Tabel per kategori
-for kategori, daftar in kategori_mapel.items():
-    elements.append(Paragraph(f"<b>{kategori}</b>", styles["Heading3"]))
-
-    data = [["Mata Pelajaran", "Nilai", "Deskripsi"]]
-    for mp in daftar:
-        if mp in nilai_dict:
-            data.append([mp, str(nilai_dict[mp][0]), nilai_dict[mp][1]])
-        else:
-            data.append([mp, "-", "Belum ada deskripsi"])
+        data = [["Mata Pelajaran", "Nilai", "Deskripsi"]]
+        for mp in daftar:
+            if mp in nilai_dict:
+                data.append([mp, str(nilai_dict[mp][0]), nilai_dict[mp][1]])
+            else:
+                data.append([mp, "-", "Belum ada deskripsi"])
 
         table = Table(data, colWidths=[120, 50, 280])
         table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("ALIGN", (1, 1), (1, -1), "CENTER"),
         ]))
-    elements.append(table)
-    elements.append(Spacer(1, 12))
+        elements.append(table)
+        elements.append(Spacer(1, 12))
 
     # Rata-rata
     elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", styles["Normal"]))
     elements.append(Spacer(1, 40))
 
-    # === TANDA TANGAN ===
-elements.append(Spacer(1, 40))
+    # --- Tanda tangan (3 kolom) ---
+    tanda_tangan = [
+        ["Kepala Madrasah", "Wali Kelas", "Peserta Didik"],
+        ["", "", ""],
+        ["", "", ""],
+        ["( ................................ )", f"( {rapot['wali_kelas']} )", f"( {rapot['nama']} )"]
+    ]
+    tt_table = Table(tanda_tangan, colWidths=[160, 160, 160])
+    tt_table.setStyle(TableStyle([
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(tt_table)
 
-data_ttd = [
-    ["Kepala Madrasah", "Wali Kelas", "Peserta Didik"],
-    ["", "", ""],  # spasi kosong untuk jarak tanda tangan
-    ["", "", ""],
-    ["", "", ""],
-    [f"( {kepala_madrasah} )", f"( {rapot['wali_kelas']} )", f"( {rapot['nama']} )"]
-]
-
-table_ttd = Table(data_ttd, colWidths=[6*cm, 6*cm, 6*cm])
-table_ttd.setStyle(TableStyle([
-    ("ALIGN", (0,0), (-1,0), "CENTER"),   # baris judul rata tengah
-    ("ALIGN", (0,4), (-1,4), "CENTER"),   # baris nama rata tengah
-    ("FONTNAME", (0,0), (-1,-1), "Helvetica"),
-    ("FONTSIZE", (0,0), (-1,0), 11),      # baris atas (jabatan)
-    ("FONTSIZE", (0,4), (-1,4), 11),      # baris nama tanda tangan
-    ("TOPPADDING", (0,1), (-1,3), 25),    # beri jarak kosong untuk tanda tangan
-]))
-elements.append(table_ttd)
+    doc.build(elements)
 
     buffer.seek(0)
     return send_file(
