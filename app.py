@@ -380,6 +380,8 @@ def nilai_murid(id):
 
 
 
+# ================= MAPEL ================= #
+# Tambah Mapel
 @app.route("/mapel/tambah", methods=["POST"])
 def tambah_mapel():
     nama = request.form.get("nama")
@@ -391,7 +393,6 @@ def tambah_mapel():
 
     conn = get_db_connection()
     cur = conn.cursor()
-
     cur.execute("INSERT INTO mapel (nama, deskripsi) VALUES (%s, %s)", (nama, deskripsi))
     conn.commit()
     cur.close()
@@ -399,6 +400,44 @@ def tambah_mapel():
 
     flash(f"✅ Mapel '{nama}' berhasil ditambahkan!", "success")
     return redirect(request.referrer)
+
+
+# Ubah Mapel
+@app.route("/mapel/edit/<int:id>", methods=["POST"])
+def edit_mapel(id):
+    nama = request.form.get("nama")
+    deskripsi = request.form.get("deskripsi")
+
+    if not nama or not deskripsi:
+        flash("⚠️ Nama & Deskripsi wajib diisi!", "danger")
+        return redirect(request.referrer)
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE mapel SET nama=%s, deskripsi=%s WHERE id=%s", (nama, deskripsi, id))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    flash(f"✏️ Mapel '{nama}' berhasil diperbarui!", "success")
+    return redirect(request.referrer)
+
+
+# Hapus Mapel
+@app.route("/mapel/hapus/<int:id>", methods=["POST"])
+def hapus_mapel(id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM mapel WHERE id=%s", (id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    flash("🗑️ Mapel berhasil dihapus!", "success")
+    return redirect(request.referrer)
+
+
+
 
 # ================= RAPOT ================= #
 @app.route("/rapot/<int:murid_id>/<int:jilid>")
