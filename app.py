@@ -304,20 +304,19 @@ def nilai_murid(id):
         conn.close()
         return "Data murid tidak ditemukan", 404
 
-    # Ambil daftar mata pelajaran diniyah
+    # Ambil daftar mata pelajaran
     cur.execute("SELECT * FROM mapel ORDER BY id ASC")
     mapel_list = cur.fetchall()
 
     if request.method == "POST":
-        action = request.form.get("action")  # tombol yang ditekan
+        action = request.form.get("action")
         jilid_aktif = int(murid["jilid"])
 
         if action == "simpan":
-            # Simpan sementara ke tabel murid (nilai & diskripsi belum final)
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
                 diskripsi = request.form.get(f"diskripsi_{m['id']}")
-                if nilai:  # hanya update jika ada isinya
+                if nilai:
                     cur.execute(
                         f"UPDATE murid SET nilai_mapel_{m['id']} = %s, diskripsi_mapel_{m['id']} = %s WHERE id = %s",
                         (nilai, diskripsi, id),
@@ -329,7 +328,6 @@ def nilai_murid(id):
             return redirect(request.url)
 
         elif action == "upload":
-            # Validasi semua mapel wajib ada nilai & diskripsi
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
                 diskripsi = request.form.get(f"diskripsi_{m['id']}")
@@ -339,7 +337,6 @@ def nilai_murid(id):
                     conn.close()
                     return redirect(request.url)
 
-            # Jika valid → simpan ke tabel nilai
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
                 diskripsi = request.form.get(f"diskripsi_{m['id']}")
@@ -351,19 +348,22 @@ def nilai_murid(id):
                     (id, m["id"], jilid_aktif, nilai, diskripsi),
                 )
 
-            # Naikkan jilid
             cur.execute("UPDATE murid SET jilid = jilid + 1 WHERE id=%s", (id,))
             conn.commit()
             flash("✅ Semua nilai & diskripsi berhasil diupload & Jilid naik!", "success")
             cur.close()
             conn.close()
-            return render_template(
+            return redirect(url_for("data_murid"))
+
+    # ✅ Bagian GET (wajib ada return render_template)
+    cur.close()
+    conn.close()
+    return render_template(
         "nilai_murid.html",
         murid=murid,
         mapel_list=mapel_list
     )
 
-   
 
 # ================= RIWAYAT NILAI MURID ================= #
 @app.route("/murid/riwayat/<int:id>")
