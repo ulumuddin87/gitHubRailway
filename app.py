@@ -2,13 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import psycopg2, psycopg2.extras
 import os
 from dotenv import load_dotenv
-
 from flask import Flask, render_template, request, redirect, url_for, send_file
 import psycopg2, io
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from datetime import date
-
 from flask import Flask, send_file, abort
 import psycopg2
 from io import BytesIO
@@ -16,13 +14,14 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
-
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.units import cm
-
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, flash
+import psycopg2.extras
 
 # Load environment dari file .env
 load_dotenv()
@@ -310,18 +309,26 @@ def nilai_murid(id):
 
     if request.method == "POST":
         action = request.form.get("action")
-        jilid_aktif = int(murid["jilid"])  # tetap pakai jilid murid saat ini
-        tahun_ajaran = request.form.get("tahun_ajaran")
         semester = request.form.get("semester")
 
+        # Tentukan tahun ajaran otomatis berdasarkan bulan saat ini
+        now = datetime.now()
+        if now.month >= 7:  # Juli - Desember
+            tahun_ajaran = f"{now.year}/{now.year + 1}"
+        else:  # Januari - Juni
+            tahun_ajaran = f"{now.year - 1}/{now.year}"
+
         if action == "simpan":
-            # simpan sementara (bisa di kolom sementara atau di tabel nilai sementara)
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
                 diskripsi = request.form.get(f"diskripsi_{m['id']}")
                 if nilai:
                     cur.execute(
-                        f"UPDATE murid SET nilai_mapel_{m['id']} = %s, diskripsi_mapel_{m['id']} = %s WHERE id = %s",
+                        f"""
+                        UPDATE murid 
+                        SET nilai_mapel_{m['id']} = %s, diskripsi_mapel_{m['id']} = %s 
+                        WHERE id = %s
+                        """,
                         (nilai, diskripsi, id),
                     )
             conn.commit()
@@ -331,7 +338,7 @@ def nilai_murid(id):
             return redirect(request.url)
 
         elif action == "upload":
-            # Validasi semua nilai dan deskripsi terisi
+            # Validasi semua nilai dan deskripsi harus lengkap
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
                 diskripsi = request.form.get(f"diskripsi_{m['id']}")
@@ -341,14 +348,17 @@ def nilai_murid(id):
                     conn.close()
                     return redirect(request.url)
 
-            # Masukkan ke tabel nilai
+            # Simpan nilai ke tabel nilai dengan semester & tahun ajaran
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
                 diskripsi = request.form.get(f"diskripsi_{m['id']}")
-                cur.execute("""
-                    INSERT INTO nilai (murid_id, mapel_id, jilid, semester, tahun_ajaran, nilai, diskripsi)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                """, (id, m["id"], jilid_aktif, semester, tahun_ajaran, nilai, diskripsi))
+                cur.execute(
+                    """
+                    INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, diskripsi)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (id, m["id"], semester, tahun_ajaran, nilai, diskripsi),
+                )
 
             conn.commit()
             flash("✅ Semua nilai & deskripsi berhasil diupload!", "success")
@@ -356,7 +366,7 @@ def nilai_murid(id):
             conn.close()
             return redirect(url_for("data_murid"))
 
-    # ✅ Bagian GET (tampilkan form input nilai)
+    # Bagian GET
     cur.close()
     conn.close()
     return render_template(
@@ -364,8 +374,6 @@ def nilai_murid(id):
         murid=murid,
         mapel_list=mapel_list
     )
-
-
 
 
 # ================= RIWAYAT NILAI MURID ================= #
