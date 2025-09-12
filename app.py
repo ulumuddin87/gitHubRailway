@@ -441,14 +441,16 @@ def rapot(murid_id, jilid):
     # Ubah hasil query ke dict
     nilai_dict = {row["nama"]: (row["nilai"], row["diskripsi"]) for row in nilai_jilid}
 
-    return render_template(
+     return render_template(
         "rapot.html",
         murid=murid,
         jilid=jilid,
         kategori_mapel=kategori_mapel,
         nilai_dict=nilai_dict,
-        rapot_id=rapot_id,   # ✅ dikirim ke template
-        rata_rata=rata_rata
+        rapot_id=rapot_id,
+        rata_rata=rata_rata,
+        tanggal_cetak=date.today().strftime("%d-%m-%Y"),   # ✅ ini ditambahkan
+        kepala_madrasah="Ust. Ahmad"  # kalau mau ada tanda tangan kepala
     )
 
 
