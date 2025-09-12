@@ -27,9 +27,9 @@
         </tr>
       </thead>
       <tbody>
-        {% for i, r in enumerate(riwayat, start=1) %}
+        {% for r in riwayat %}
         <tr>
-          <td>{{ i }}</td>
+          <td>{{ loop.index }}</td>
           <td>{{ r.semester }}</td>
           <td>{{ r.tahun_ajaran }}</td>
           <td>{{ r.mapel_nama }}</td>
