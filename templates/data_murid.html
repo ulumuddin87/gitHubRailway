@@ -64,7 +64,22 @@
 
 <!-- Status Nilai -->
 <td class="text-center 
-</div>
+  {% if m.nilai_bacaan and m.nilai_menulis and m.nilai_hafalan and m.nilai_ahlak and m.nilai_kehadiran %}
+    bg-success text-white
+  {% elif m.nilai_bacaan or m.nilai_menulis or m.nilai_hafalan or m.nilai_ahlak or m.nilai_kehadiran %}
+    bg-warning
+  {% else %}
+    bg-white text-black
+  {% endif %}
+">
+  {% if m.nilai_bacaan and m.nilai_menulis and m.nilai_hafalan and m.nilai_ahlak and m.nilai_kehadiran %}
+    Lengkap
+  {% elif m.nilai_bacaan or m.nilai_menulis or m.nilai_hafalan or m.nilai_ahlak or m.nilai_kehadiran %}
+    Ada Kosong
+  {% else %}
+    Belum
+  {% endif %}
+ </div>
   <a href="{{ url_for('nilai_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Nilai</a>
   <a href="{{ url_for('riwayat_murid', id=m.id) }}" class="btn btn-sm btn-outline-dark mt-1">Riwayat</a>
 </td>
