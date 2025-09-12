@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h3 class="mb-4">📚 Manajemen Mata Pelajaran</h3>
+
+    <!-- Tombol Tambah -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Daftar Mapel</h5>
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambah">
+            ➕ Tambah Mapel
+        </button>
+    </div>
+
+    <!-- Tabel Mapel -->
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr class="text-center">
+                <th style="width: 5%;">No</th>
+                <th style="width: 25%;">Nama Mapel</th>
+                <th style="width: 50%;">Deskripsi</th>
+                <th style="width: 20%;">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in mapel %}
+            <tr>
+                <td class="text-center">{{ loop.index }}</td>
+                <td>{{ m.nama }}</td>
+                <td>{{ m.deskripsi }}</td>
+                <td class="text-center">
+                    <!-- Tombol Edit -->
+                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#modalEdit{{ m.id }}">
+                        ✏️ Ubah
+                    </button>
+
+                    <!-- Tombol Hapus -->
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#modalHapus{{ m.id }}">
+                        🗑️ Hapus
+                    </button>
+                </td>
+            </tr>
+
+            <!-- Modal Edit -->
+            <div class="modal fade" id="modalEdit{{ m.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form method="POST" action="{{ url_for('edit_mapel', id=m.id) }}">
+                            <div class="modal-header">
+                                <h5 class="modal-title">✏️ Ubah Mapel</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Nama Mapel</label>
+                                    <input type="text" class="form-control" name="nama" value="{{ m.nama }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Deskripsi</label>
+                                    <textarea class="form-control" name="deskripsi" rows="3" required>{{ m.deskripsi }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success">💾 Simpan</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Hapus -->
+            <div class="modal fade" id="modalHapus{{ m.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form method="POST" action="{{ url_for('hapus_mapel', id=m.id) }}">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title">⚠️ Konfirmasi Hapus</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Yakin ingin menghapus mapel <b>{{ m.nama }}</b>?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-danger">🗑️ Hapus</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Tambah -->
+<div class="modal fade" id="modalTambah" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('tambah_mapel') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">➕ Tambah Mapel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Mapel</label>
+                        <input type="text" class="form-control" name="nama" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea class="form-control" name="deskripsi" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">💾 Simpan</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
