@@ -575,15 +575,15 @@ elements.append(Spacer(1, 12))
 
 
     # Tabel per kategori
-    for kategori, daftar in kategori_mapel.items():
-        elements.append(Paragraph(f"<b>{kategori}</b>", styles["Heading3"]))
+for kategori, daftar in kategori_mapel.items():
+    elements.append(Paragraph(f"<b>{kategori}</b>", styles["Heading3"]))
 
-        data = [["Mata Pelajaran", "Nilai", "Deskripsi"]]
-        for mp in daftar:
-            if mp in nilai_dict:
-                data.append([mp, str(nilai_dict[mp][0]), nilai_dict[mp][1]])
-            else:
-                data.append([mp, "-", "Belum ada deskripsi"])
+    data = [["Mata Pelajaran", "Nilai", "Deskripsi"]]
+    for mp in daftar:
+        if mp in nilai_dict:
+            data.append([mp, str(nilai_dict[mp][0]), nilai_dict[mp][1]])
+        else:
+            data.append([mp, "-", "Belum ada deskripsi"])
 
         table = Table(data, colWidths=[120, 50, 280])
         table.setStyle(TableStyle([
@@ -591,8 +591,8 @@ elements.append(Spacer(1, 12))
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ]))
-        elements.append(table)
-        elements.append(Spacer(1, 12))
+    elements.append(table)
+    elements.append(Spacer(1, 12))
 
     # Rata-rata
     elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", styles["Normal"]))
