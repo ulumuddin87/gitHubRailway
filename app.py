@@ -311,69 +311,56 @@ def nilai_murid(id):
         action = request.form.get("action")
         semester = request.form.get("semester")
 
-        # Tentukan tahun ajaran otomatis berdasarkan bulan saat ini
+        # Tahun ajaran otomatis
         now = datetime.now()
-        if now.month >= 7:  # Juli - Desember
+        if now.month >= 7:
             tahun_ajaran = f"{now.year}/{now.year + 1}"
-        else:  # Januari - Juni
+        else:
             tahun_ajaran = f"{now.year - 1}/{now.year}"
 
-        if action == "simpan":
+        if action == "simpan" or action == "upload":
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
                 diskripsi = request.form.get(f"diskripsi_{m['id']}")
-                if nilai:
-                    cur.execute(
-                        f"""
-                        UPDATE murid 
-                        SET nilai_mapel_{m['id']} = %s, diskripsi_mapel_{m['id']} = %s 
-                        WHERE id = %s
-                        """,
-                        (nilai, diskripsi, id),
-                    )
-            conn.commit()
-            flash("💾 Nilai sementara berhasil disimpan!", "info")
-            cur.close()
-            conn.close()
-            return redirect(request.url)
 
-        elif action == "upload":
-            # Validasi semua nilai dan deskripsi harus lengkap
-            for m in mapel_list:
-                nilai = request.form.get(f"mapel_{m['id']}")
-                diskripsi = request.form.get(f"diskripsi_{m['id']}")
-                if not nilai or not diskripsi:
+                if action == "upload" and (not nilai or not diskripsi):
                     flash(f"⚠️ Nilai atau deskripsi untuk {m['nama']} belum lengkap!", "danger")
                     cur.close()
                     conn.close()
                     return redirect(request.url)
 
-            # Simpan nilai ke tabel nilai dengan semester & tahun ajaran
-            for m in mapel_list:
-                nilai = request.form.get(f"mapel_{m['id']}")
-                diskripsi = request.form.get(f"diskripsi_{m['id']}")
-                cur.execute(
-                    """
-                    INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, diskripsi)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    """,
-                    (id, m["id"], semester, tahun_ajaran, nilai, diskripsi),
-                )
+                if nilai:  # hanya simpan jika ada nilai
+                    cur.execute("""
+                        INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, diskripsi)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (murid_id, mapel_id, semester, tahun_ajaran)
+                        DO UPDATE SET nilai = EXCLUDED.nilai, diskripsi = EXCLUDED.diskripsi
+                    """, (id, m["id"], semester, tahun_ajaran, nilai, diskripsi))
 
             conn.commit()
-            flash("✅ Semua nilai & deskripsi berhasil diupload!", "success")
+            msg = "✅ Semua nilai & deskripsi berhasil disimpan!" if action == "upload" else "💾 Nilai sementara berhasil disimpan!"
+            flash(msg, "success" if action == "upload" else "info")
             cur.close()
             conn.close()
-            return redirect(url_for("data_murid"))
+            return redirect(request.url)
 
-    # Bagian GET
+    # Ambil nilai existing untuk form GET
+    nilai_existing = {}
+    cur.execute("SELECT mapel_id, nilai, diskripsi, semester, tahun_ajaran FROM nilai WHERE murid_id=%s", (id,))
+    for row in cur.fetchall():
+        key = (row["mapel_id"], row["semester"], row["tahun_ajaran"])
+        nilai_existing[key] = {"nilai": row["nilai"], "diskripsi": row["diskripsi"]}
+
     cur.close()
     conn.close()
+
     return render_template(
         "nilai_murid.html",
         murid=murid,
-        mapel_list=mapel_list
+        mapel_list=mapel_list,
+        nilai_existing=nilai_existing
     )
+
 
 
 # ================= RIWAYAT NILAI MURID ================= #
@@ -385,15 +372,19 @@ def riwayat_murid(id):
     # Data murid
     cur.execute("SELECT * FROM murid WHERE id=%s", (id,))
     murid = cur.fetchone()
+    if not murid:
+        cur.close()
+        conn.close()
+        return "Data murid tidak ditemukan", 404
 
-    # Riwayat nilai (dengan semester & tahun ajaran)
+    # Riwayat nilai
     cur.execute("""
-        SELECT n.tahun_ajaran, n.semester, n.jilid, mp.nama AS mapel_nama, 
+        SELECT n.tahun_ajaran, n.semester, mp.nama AS mapel_nama, 
                n.nilai, n.diskripsi, n.created_at
         FROM nilai n
         JOIN mapel mp ON n.mapel_id = mp.id
         WHERE n.murid_id = %s
-        ORDER BY n.tahun_ajaran DESC, n.semester ASC, n.jilid ASC, mp.nama ASC
+        ORDER BY n.tahun_ajaran DESC, n.semester ASC, mp.nama ASC
     """, (id,))
     riwayat = cur.fetchall()
 
@@ -401,7 +392,6 @@ def riwayat_murid(id):
     conn.close()
 
     return render_template("riwayat_murid.html", murid=murid, riwayat=riwayat)
-
 
 
 
