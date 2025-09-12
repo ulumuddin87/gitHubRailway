@@ -524,7 +524,7 @@ def cetak_rapot(rapot_id):
     addr_style = styles["Normal"]
     addr_style.alignment = 1
     elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", addr_style))
-    elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726",
+    elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726",))
                           
     # === Judul Rapot (center) ===
     heading1 = styles["Heading1"]; heading1.alignment = 1
