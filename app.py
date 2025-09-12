@@ -584,24 +584,33 @@ def cetak_rapot(rapot_id):
     elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", normal_center))
     elements.append(Spacer(1, 40))
 
-    # === Tanda Tangan (3 kolom, center) ===
-    kepala_madrasah = "Ustadz Ahmad"  # 👉 bisa diambil dari DB
-    tanda_tangan = [
-        ["Kepala Madrasah", "Wali Kelas", "Peserta Didik"],
-        ["", "", ""],
-        ["", "", ""],
-        [f"( {kepala_madrasah} )", f"( {rapot['wali_kelas']} )", f"( {rapot['nama']} )"]
-    ]
-    tt_table = Table(tanda_tangan, colWidths=[160, 160, 160])
-    tt_table.setStyle(TableStyle([
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-        ("FONTSIZE", (0, 0), (-1, -1), 11),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-    ]))
-    elements.append(tt_table)
+    t_table)
 
-    doc.build(elements)
+# === Tanda Tangan (3 kolom, center) ===
+kepala_madrasah = "Ustadz Ahmad"  # 👉 bisa diambil dari DB
+tanda_tangan = [
+    ["Kepala Madrasah", "Wali Kelas", "Peserta Didik"],
+    ["", "", ""],
+    ["", "", ""],
+    [f"( {kepala_madrasah} )", f"( {rapot['wali_kelas']} )", f"( {rapot['nama']} )"]
+]
+
+tt_table = Table(tanda_tangan, colWidths=[160, 160, 160])
+tt_table.setStyle(TableStyle([
+    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+    ("FONTSIZE", (0, 0), (-1, -1), 11),
+    ("TOPPADDING", (0, 0), (-1, -1), 6),
+    ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+
+    # ✅ Tambah garis tabel
+    ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+    ("BOX", (0, 0), (-1, -1), 1, colors.black),
+]))
+elements.append(tt_table)
+
+doc.build(elements)
+
 
     buffer.seek(0)
     return send_file(
