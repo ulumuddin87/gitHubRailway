@@ -289,8 +289,9 @@ def biodata_murid(id):
     return render_template("biodata_murid.html", murid=murid)
 
 
-# ================= NILAI ================= #
 
+
+# ================= NILAI ================= #
 @app.route("/nilai/<int:id>", methods=["GET", "POST"])
 def nilai_murid(id):
     conn = get_db_connection()
@@ -310,9 +311,9 @@ def nilai_murid(id):
 
     if request.method == "POST":
         action = request.form.get("action")
-        jilid_aktif = int(murid["jilid"])
 
         if action == "simpan":
+            # Simpan sementara di tabel murid (opsional, bisa skip juga)
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
                 diskripsi = request.form.get(f"diskripsi_{m['id']}")
@@ -327,38 +328,37 @@ def nilai_murid(id):
             conn.close()
             return redirect(request.url)
 
-    if action == "upload":
-        tahun_ajaran = request.form.get("tahun_ajaran")
-        semester = request.form.get("semester")
+        elif action == "upload":
+            # Ambil semester & tahun ajaran dari form
+            tahun_ajaran = request.form.get("tahun_ajaran")
+            semester = request.form.get("semester")
 
-    # Validasi semua nilai & deskripsi sudah diisi
-        for m in mapel_list:
-            nilai = request.form.get(f"mapel_{m['id']}")
-            diskripsi = request.form.get(f"diskripsi_{m['id']}")
-            if not nilai or not diskripsi:
-                flash(f"⚠️ Nilai atau deskripsi untuk {m['nama']} belum lengkap!", "danger")
-                cur.close()
-                conn.close()
-                return redirect(request.url)
+            # Validasi semua nilai & deskripsi sudah diisi
+            for m in mapel_list:
+                nilai = request.form.get(f"mapel_{m['id']}")
+                diskripsi = request.form.get(f"diskripsi_{m['id']}")
+                if not nilai or not diskripsi:
+                    flash(f"⚠️ Nilai atau deskripsi untuk {m['nama']} belum lengkap!", "danger")
+                    cur.close()
+                    conn.close()
+                    return redirect(request.url)
 
-    # Masukkan nilai ke tabel 'nilai'
-        for m in mapel_list:
-            nilai = request.form.get(f"mapel_{m['id']}")
-            diskripsi = request.form.get(f"diskripsi_{m['id']}")
-            cur.execute("""
-                INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, diskripsi)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (id, m['id'], semester, tahun_ajaran, nilai, diskripsi))
+            # Simpan ke tabel nilai
+            for m in mapel_list:
+                nilai = request.form.get(f"mapel_{m['id']}")
+                diskripsi = request.form.get(f"diskripsi_{m['id']}")
+                cur.execute("""
+                    INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, diskripsi)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (id, m["id"], semester, tahun_ajaran, nilai, diskripsi))
 
-        conn.commit()
-        flash("✅ Semua nilai & deskripsi berhasil diupload!", "success")
-        cur.close()
-        conn.close()
-        return redirect(url_for("data_murid"))
+            conn.commit()
+            flash("✅ Semua nilai & deskripsi berhasil diupload!", "success")
+            cur.close()
+            conn.close()
+            return redirect(url_for("data_murid"))
 
-
-
-    # ✅ Bagian GET (wajib ada return render_template)
+    # Bagian GET
     cur.close()
     conn.close()
     return render_template(
@@ -366,6 +366,7 @@ def nilai_murid(id):
         murid=murid,
         mapel_list=mapel_list
     )
+
 
 
 
