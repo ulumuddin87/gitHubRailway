@@ -7,47 +7,31 @@
     <h5 class="mb-0">Nilai Murid - {{ murid.nama }}</h5>
   </div>
   <div class="card-body">
+    <!-- Identitas Murid -->
     <ul>
       <li><b>Nama:</b> {{ murid.nama }}</li>
       <li><b>Kelas:</b> {{ murid.kelas }}</li>
       <li><b>Wali Kelas:</b> {{ murid.wali_kelas }}</li>
     </ul>
 
-    
-    <!-- Pilih Semester dan Tombol Rapot -->
-<div class="mb-3 d-flex align-items-end gap-2">
-    <div class="flex-grow-1">
+    <!-- Pilih Semester + Tombol Rapot -->
+    <div class="mb-3 d-flex align-items-end gap-2">
+      <div class="flex-grow-1">
         <label for="semester" class="form-label">Semester:</label>
         <select name="semester" id="semester" class="form-select" required>
-            <option value="Ganjil">Ganjil</option>
-            <option value="Genap">Genap</option>
+          <option value="Ganjil">Ganjil</option>
+          <option value="Genap">Genap</option>
         </select>
-    </div>
+      </div>
 
-    {% if show_rapot_btn %}
-    <div class="d-flex align-items-end">
+      {% if show_rapot_btn %}
+      <div class="d-flex align-items-end">
         <a href="#" id="btnRapot" class="btn btn-primary" style="margin-bottom: 0;">
-            Lihat Rapot
+          Lihat Rapot
         </a>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
-</div>
-
-<!-- Script untuk mengarahkan tombol ke rapot sesuai semester -->
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const btnRapot = document.getElementById("btnRapot");
-    const semesterSelect = document.getElementById("semester");
-
-    if(btnRapot) {
-        btnRapot.addEventListener("click", function() {
-            const semester = semesterSelect.value;
-            const muridId = {{ murid.id }};  // pastikan murid.id tersedia
-            window.location.href = `/rapot/${muridId}/${semester}`;
-        });
-    }
-});
-</script>
 
     <!-- Form input nilai -->
     <form method="POST" id="formNilai" onsubmit="return confirmSubmit(event)">
@@ -55,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function() {
         {% for m in mapel_list %}
         <div class="col-md-6">
           <label class="form-label">{{ m.nama }} (Nilai)</label>
-          <input type="number" name="mapel_{{ m.id }}" class="form-control" required>
+          <input type="number" name="mapel_{{ m.id }}" class="form-control" min="0" max="100" required>
         </div>
         <div class="col-md-6">
           <label class="form-label">Deskripsi {{ m.nama }}</label>
@@ -76,6 +60,7 @@ document.addEventListener("DOMContentLoaded", function() {
   </div>
 </div>
 
+<!-- Script konfirmasi upload -->
 <script>
 function confirmSubmit(event) {
   const action = event.submitter.value;
@@ -85,4 +70,21 @@ function confirmSubmit(event) {
   return true;
 }
 </script>
+
+<!-- Script untuk tombol Rapot -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const btnRapot = document.getElementById("btnRapot");
+    const semesterSelect = document.getElementById("semester");
+
+    if(btnRapot) {
+        btnRapot.addEventListener("click", function() {
+            const semester = semesterSelect.value;
+            const muridId = {{ murid.id }};
+            window.location.href = `/rapot/${muridId}/${semester}`;
+        });
+    }
+});
+</script>
+
 {% endblock %}
