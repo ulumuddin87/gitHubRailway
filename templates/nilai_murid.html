@@ -13,7 +13,23 @@
       <li><b>Wali Kelas:</b> {{ murid.wali_kelas }}</li>
     </ul>
 
-    <!-- Riwayat nilai --> 
+<!-- Tahun Ajaran & Semester -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <label for="tahun_ajaran" class="form-label">Tahun Ajaran</label>
+      <input type="text" name="tahun_ajaran" id="tahun_ajaran" 
+             placeholder="contoh: 2024/2025" class="form-control" required>
+    </div>
+    <div class="col-md-6">
+      <label for="semester" class="form-label">Semester</label>
+      <select name="semester" id="semester" class="form-select" required>
+        <option value="Ganjil">Ganjil</option>
+        <option value="Genap">Genap</option>
+      </select>
+    </div>
+  </div>
+  
+    <!-- Nilai mapel --> 
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="mb-0">📚 Input Nilai Mapel</h5>
      </div>

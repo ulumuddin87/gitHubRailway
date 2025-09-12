@@ -8,6 +8,8 @@
   <table class="table table-bordered table-striped text-center align-middle">
     <thead class="table-light">
       <tr>
+        <th>Tahun Ajaran</th>
+        <th>Semester</th>
         <th>Jilid</th>
         <th>Mata Pelajaran</th>
         <th>Nilai</th>
@@ -18,6 +20,8 @@
     <tbody>
       {% for n in riwayat %}
       <tr>
+        <td>{{ r.tahun_ajaran }}</td>
+        <td>{{ r.semester }}</td>
         <td>{{ n.jilid }}</td>
         <td>{{ n.mapel_nama }}</td>
         <td>{{ n.nilai }}</td>

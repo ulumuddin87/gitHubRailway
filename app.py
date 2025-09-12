@@ -376,13 +376,14 @@ def riwayat_murid(id):
     cur.execute("SELECT * FROM murid WHERE id=%s", (id,))
     murid = cur.fetchone()
 
-    # Riwayat nilai langsung dari tabel nilai
+    # Riwayat nilai (dengan semester & tahun ajaran)
     cur.execute("""
-        SELECT n.jilid, mp.nama AS mapel_nama, n.nilai, n.diskripsi, n.created_at
+        SELECT n.tahun_ajaran, n.semester, n.jilid, mp.nama AS mapel_nama, 
+               n.nilai, n.diskripsi, n.created_at
         FROM nilai n
         JOIN mapel mp ON n.mapel_id = mp.id
         WHERE n.murid_id = %s
-        ORDER BY n.jilid ASC, mp.nama ASC
+        ORDER BY n.tahun_ajaran DESC, n.semester ASC, n.jilid ASC, mp.nama ASC
     """, (id,))
     riwayat = cur.fetchall()
 
@@ -390,6 +391,7 @@ def riwayat_murid(id):
     conn.close()
 
     return render_template("riwayat_murid.html", murid=murid, riwayat=riwayat)
+
 
 
 
