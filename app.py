@@ -327,23 +327,35 @@ def nilai_murid(id):
             conn.close()
             return redirect(request.url)
 
-        if action == "upload":
-    tahun_ajaran = request.form.get("tahun_ajaran")
-    semester = request.form.get("semester")
+    if action == "upload":
+        tahun_ajaran = request.form.get("tahun_ajaran")
+        semester = request.form.get("semester")
 
-    for m in mapel_list:
-        nilai = request.form.get(f"mapel_{m['id']}")
-        diskripsi = request.form.get(f"diskripsi_{m['id']}")
-        cur.execute("""
-            INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, diskripsi)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (id, m["id"], semester, tahun_ajaran, nilai, diskripsi))
+    # Validasi semua nilai & deskripsi sudah diisi
+        for m in mapel_list:
+            nilai = request.form.get(f"mapel_{m['id']}")
+            diskripsi = request.form.get(f"diskripsi_{m['id']}")
+            if not nilai or not diskripsi:
+                flash(f"⚠️ Nilai atau deskripsi untuk {m['nama']} belum lengkap!", "danger")
+                cur.close()
+                conn.close()
+                return redirect(request.url)
 
-    conn.commit()
-    flash("✅ Semua nilai & deskripsi berhasil diupload!", "success")
-    cur.close()
-    conn.close()
-    return redirect(url_for("data_murid"))
+    # Masukkan nilai ke tabel 'nilai'
+        for m in mapel_list:
+            nilai = request.form.get(f"mapel_{m['id']}")
+            diskripsi = request.form.get(f"diskripsi_{m['id']}")
+            cur.execute("""
+                INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, diskripsi)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (id, m['id'], semester, tahun_ajaran, nilai, diskripsi))
+
+        conn.commit()
+        flash("✅ Semua nilai & deskripsi berhasil diupload!", "success")
+        cur.close()
+        conn.close()
+        return redirect(url_for("data_murid"))
+
 
 
     # ✅ Bagian GET (wajib ada return render_template)
