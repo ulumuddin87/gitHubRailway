@@ -1,24 +1,27 @@
 {% extends 'base.html' %}
 {% block content %}
 
-
-<div class="container mt-4">
+<div class="container mt-4" style="font-family: 'Times New Roman', serif; line-height: 1.6;">
+    <!-- Kop Surat -->
     <div class="text-center mb-4">
-        <h4><b>TAMAN PENDIDIKAN AL QUR'AN</b></h4>
-        <h3><b>“MAFATIHUL HUDA”</b></h3>
-        <p>BAKALANRAYUNG KECAMATAN KUDU – JOMBANG</p>
-        <p>Nomor Statistik : 411.235.17.2074 | Telp. 0857-3634-0726</p>
-        <hr>
+        <h4 class="mb-0"><b>TAMAN PENDIDIKAN AL-QUR'AN</b></h4>
+        <h2 class="mb-0"><b>“MAFATIHUL HUDA”</b></h2>
+        <p class="mb-0">Bakalanrayung, Kecamatan Kudu – Kabupaten Jombang</p>
+        <p class="mb-0">Nomor Statistik : 411.235.17.2074 | Telp. 0857-3634-0726</p>
+        <hr style="border: 2px solid black;">
     </div>
+
+    <!-- Judul Rapot -->
     <div class="text-center mb-4">
         <h3><b>LAPORAN HASIL BELAJAR</b></h3>
         <h5>Jilid {{ jilid }}</h5>
+        <h6><i>Tahun Ajaran {{ tahun_ajaran }}</i></h6>
     </div>
 
     <!-- Identitas Murid -->
     <table class="table table-borderless w-75 mx-auto mb-4">
         <tr>
-            <td><b>Nama</b></td>
+            <td style="width: 30%;"><b>Nama Peserta Didik</b></td>
             <td>: {{ murid.nama }}</td>
         </tr>
         <tr>
@@ -34,9 +37,9 @@
     <!-- Tabel Nilai per Kategori -->
     {% for kategori, daftar in kategori_mapel.items() %}
     <h5 class="mt-4"><b>{{ kategori }}</b></h5>
-    <table class="table table-bordered">
+    <table class="table table-bordered" style="font-size: 14px;">
         <thead class="table-light">
-            <tr>
+            <tr class="text-center">
                 <th style="width: 25%;">Mata Pelajaran</th>
                 <th style="width: 10%;">Nilai</th>
                 <th style="width: 65%;">Deskripsi</th>
@@ -46,7 +49,7 @@
             {% for mp in daftar %}
             <tr>
                 <td>{{ mp }}</td>
-                <td>
+                <td class="text-center">
                     {% if mp in nilai_dict %}
                         {{ nilai_dict[mp][0] }}
                     {% else %}
@@ -75,22 +78,26 @@
             ⬅ Kembali ke Nilai Murid
         </a>
     </div>
-    
-
 
     <!-- Tanda Tangan -->
     <div class="row mt-5">
         <div class="col text-center">
             <p>Mengetahui,</p>
+            <p><b>Kepala Madrasah</b></p>
+            <br><br><br>
+            <p>( {{ kepala_madrasah }} )</p>
+        </div>
+        <div class="col text-center">
             <p>Wali Kelas</p>
-            <br><br>
+            <br><br><br>
             <p>( {{ murid.wali_kelas }} )</p>
         </div>
         <div class="col text-center">
-            <p>Peserta Didik,</p>
+            <p>Peserta Didik</p>
             <br><br><br>
             <p>( {{ murid.nama }} )</p>
         </div>
     </div>
 </div>
+
 {% endblock %}
