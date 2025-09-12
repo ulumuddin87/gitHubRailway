@@ -17,6 +17,10 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.units import cm
+from reportlab.platypus import ParagraphStyle
+
 # Load environment dari file .env
 load_dotenv()
 
@@ -505,32 +509,70 @@ def cetak_rapot(rapot_id):
     elements = []
     styles = getSampleStyleSheet()
 
-    # === KOP SURAT ===
-    elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", styles["Title"]))
-    elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", styles["Heading1"]))
-    elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", styles["Normal"]))
-    elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726", styles["Normal"]))
-    elements.append(Spacer(1, 6))
-    elements.append(Table([[" "]*1], colWidths=[450], style=[
-        ("LINEABOVE", (0,0), (-1,0), 1, colors.black)
-    ]))
-    elements.append(Spacer(1, 12))
 
-    # Judul
-    elements.append(Paragraph(f"<b>LAPORAN HASIL BELAJAR</b>", styles["Title"]))
-    elements.append(Paragraph(f"Jilid {rapot['jilid']}", styles["Heading2"]))
-    elements.append(Spacer(1, 12))
+# === STYLE CUSTOM ===
+style_center_bold = ParagraphStyle(
+    name="CenterBold",
+    parent=styles["Normal"],
+    alignment=TA_CENTER,
+    fontSize=14,
+    leading=16,
+    spaceAfter=4,
+    spaceBefore=4,
+    bold=True
+)
 
-    # Identitas murid
-    elements.append(Paragraph(f"<b>Nama:</b> {rapot['nama']}", styles["Normal"]))
-    elements.append(Paragraph(f"<b>Kelas:</b> {rapot['kelas']}", styles["Normal"]))
-    elements.append(Paragraph(f"<b>Wali Kelas:</b> {rapot['wali_kelas']}", styles["Normal"]))
-    # ✅ periksa apakah tanggal ada
-    if rapot["tanggal"]:
-        elements.append(Paragraph(f"<b>Tanggal:</b> {rapot['tanggal'].strftime('%d-%m-%Y')}", styles["Normal"]))
-    else:
-        elements.append(Paragraph("<b>Tanggal:</b> -", styles["Normal"]))
-    elements.append(Spacer(1, 12))
+style_center_big = ParagraphStyle(
+    name="CenterBig",
+    parent=styles["Normal"],
+    alignment=TA_CENTER,
+    fontSize=16,
+    leading=18,
+    spaceAfter=6,
+    bold=True
+)
+
+style_center = ParagraphStyle(
+    name="Center",
+    parent=styles["Normal"],
+    alignment=TA_CENTER,
+    fontSize=11,
+    leading=13,
+)
+
+# === KOP SURAT ===
+elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", style_center_bold))
+elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", style_center_big))
+elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", style_center))
+elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726", style_center))
+elements.append(Spacer(1, 6))
+elements.append(Table([[""]], colWidths=[17*cm], style=[
+    ("LINEABOVE", (0,0), (-1,0), 1, colors.black)
+]))
+elements.append(Spacer(1, 12))
+
+# === JUDUL ===
+elements.append(Paragraph("<b>LAPORAN HASIL BELAJAR</b>", style_center_big))
+elements.append(Paragraph(f"Jilid {rapot['jilid']}", style_center))
+elements.append(Spacer(1, 12))
+
+# === IDENTITAS MURID ===
+data_identitas = [
+    ["Nama", f": {rapot['nama']}", "Kelas", f": {rapot['kelas']}"],
+    ["Wali Kelas", f": {rapot['wali_kelas']}", "Tanggal", f": {rapot['tanggal'].strftime('%d-%m-%Y') if rapot['tanggal'] else '-'}"],
+]
+
+table_identitas = Table(data_identitas, colWidths=[3*cm, 6*cm, 3*cm, 5*cm])
+table_identitas.setStyle(TableStyle([
+    ("ALIGN", (0,0), (-1,-1), "LEFT"),
+    ("VALIGN", (0,0), (-1,-1), "MIDDLE"),
+    ("FONTNAME", (0,0), (-1,-1), "Helvetica"),
+    ("FONTSIZE", (0,0), (-1,-1), 11),
+    ("BOTTOMPADDING", (0,0), (-1,-1), 4),
+]))
+elements.append(table_identitas)
+elements.append(Spacer(1, 12))
+
 
     # Tabel per kategori
     for kategori, daftar in kategori_mapel.items():
@@ -556,20 +598,27 @@ def cetak_rapot(rapot_id):
     elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", styles["Normal"]))
     elements.append(Spacer(1, 40))
 
-    # Tanda tangan
-    elements.append(Paragraph("Kepala Madrasah", styles["Normal"]))
-    elements.append(Spacer(1, 40))
-    elements.append(Paragraph("( Ust. Ahmad )", styles["Normal"]))  # bisa diganti sesuai kebutuhan
-    elements.append(Spacer(1, 40))
-    elements.append(Paragraph("Wali Kelas", styles["Normal"]))
-    elements.append(Spacer(1, 40))
-    elements.append(Paragraph(f"( {rapot['wali_kelas']} )", styles["Normal"]))
-    elements.append(Spacer(1, 40))
-    elements.append(Paragraph("Peserta Didik", styles["Normal"]))
-    elements.append(Spacer(1, 40))
-    elements.append(Paragraph(f"( {rapot['nama']} )", styles["Normal"]))
+    # === TANDA TANGAN ===
+elements.append(Spacer(1, 40))
 
-    doc.build(elements)
+data_ttd = [
+    ["Kepala Madrasah", "Wali Kelas", "Peserta Didik"],
+    ["", "", ""],  # spasi kosong untuk jarak tanda tangan
+    ["", "", ""],
+    ["", "", ""],
+    [f"( {kepala_madrasah} )", f"( {rapot['wali_kelas']} )", f"( {rapot['nama']} )"]
+]
+
+table_ttd = Table(data_ttd, colWidths=[6*cm, 6*cm, 6*cm])
+table_ttd.setStyle(TableStyle([
+    ("ALIGN", (0,0), (-1,0), "CENTER"),   # baris judul rata tengah
+    ("ALIGN", (0,4), (-1,4), "CENTER"),   # baris nama rata tengah
+    ("FONTNAME", (0,0), (-1,-1), "Helvetica"),
+    ("FONTSIZE", (0,0), (-1,0), 11),      # baris atas (jabatan)
+    ("FONTSIZE", (0,4), (-1,4), 11),      # baris nama tanda tangan
+    ("TOPPADDING", (0,1), (-1,3), 25),    # beri jarak kosong untuk tanda tangan
+]))
+elements.append(table_ttd)
 
     buffer.seek(0)
     return send_file(
