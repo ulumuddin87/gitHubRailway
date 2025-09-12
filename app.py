@@ -19,7 +19,10 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.units import cm
-from reportlab.platypus import ParagraphStyle
+
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
 
 # Load environment dari file .env
 load_dotenv()
