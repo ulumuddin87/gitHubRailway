@@ -290,7 +290,6 @@ def biodata_murid(id):
 
 
 
-
 # ================= NILAI ================= #
 @app.route("/nilai/<int:id>", methods=["GET", "POST"])
 def nilai_murid(id):
@@ -311,9 +310,12 @@ def nilai_murid(id):
 
     if request.method == "POST":
         action = request.form.get("action")
+        jilid_aktif = int(murid["jilid"])  # tetap pakai jilid murid saat ini
+        tahun_ajaran = request.form.get("tahun_ajaran")
+        semester = request.form.get("semester")
 
         if action == "simpan":
-            # Simpan sementara di tabel murid (opsional, bisa skip juga)
+            # simpan sementara (bisa di kolom sementara atau di tabel nilai sementara)
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
                 diskripsi = request.form.get(f"diskripsi_{m['id']}")
@@ -329,11 +331,7 @@ def nilai_murid(id):
             return redirect(request.url)
 
         elif action == "upload":
-            # Ambil semester & tahun ajaran dari form
-            tahun_ajaran = request.form.get("tahun_ajaran")
-            semester = request.form.get("semester")
-
-            # Validasi semua nilai & deskripsi sudah diisi
+            # Validasi semua nilai dan deskripsi terisi
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
                 diskripsi = request.form.get(f"diskripsi_{m['id']}")
@@ -343,14 +341,14 @@ def nilai_murid(id):
                     conn.close()
                     return redirect(request.url)
 
-            # Simpan ke tabel nilai
+            # Masukkan ke tabel nilai
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
                 diskripsi = request.form.get(f"diskripsi_{m['id']}")
                 cur.execute("""
-                    INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, diskripsi)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                """, (id, m["id"], semester, tahun_ajaran, nilai, diskripsi))
+                    INSERT INTO nilai (murid_id, mapel_id, jilid, semester, tahun_ajaran, nilai, diskripsi)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (id, m["id"], jilid_aktif, semester, tahun_ajaran, nilai, diskripsi))
 
             conn.commit()
             flash("✅ Semua nilai & deskripsi berhasil diupload!", "success")
@@ -358,7 +356,7 @@ def nilai_murid(id):
             conn.close()
             return redirect(url_for("data_murid"))
 
-    # Bagian GET
+    # ✅ Bagian GET (tampilkan form input nilai)
     cur.close()
     conn.close()
     return render_template(
