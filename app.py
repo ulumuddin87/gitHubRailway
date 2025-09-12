@@ -381,6 +381,19 @@ def nilai_murid(id):
 
 
 # ================= MAPEL ================= #
+@app.route("/mapel")
+def data_mapel():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    cur.execute("SELECT * FROM mapel ORDER BY id ASC")
+    mapel_list = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template("mapel.html", mapel=mapel_list)
+
 # Tambah Mapel
 @app.route("/mapel/tambah", methods=["POST"])
 def tambah_mapel():
