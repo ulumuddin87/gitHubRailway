@@ -512,21 +512,20 @@ def cetak_rapot(rapot_id):
     elements = []
     styles = getSampleStyleSheet()
 
-    # === KOP SURAT (center) ===
-    title_center = styles["Title"]; title_center.alignment = 1
-    heading_center = styles["Heading2"]; heading_center.alignment = 1
-    normal_center = styles["Normal"]; normal_center.alignment = 1
+    # === KOP SURAT ===
+    kop_style = styles["Title"]
+    kop_style.alignment = 1  # Center
+    elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", kop_style))
 
-    elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", title_center))
-    elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", heading_center))
-    elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", normal_center))
-    elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726", normal_center))
-    elements.append(Spacer(1, 6))
-    elements.append(Table([[""]], colWidths=[500], style=[
-        ("LINEABOVE", (0,0), (-1,0), 2, colors.black)
-    ]))
-    elements.append(Spacer(1, 12))
+    subkop_style = styles["Heading2"]
+    subkop_style.alignment = 1
+    elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", subkop_style))
 
+    addr_style = styles["Normal"]
+    addr_style.alignment = 1
+    elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", addr_style))
+    elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726",
+                          
     # === Judul Rapot (center) ===
     heading1 = styles["Heading1"]; heading1.alignment = 1
     heading2 = styles["Heading2"]; heading2.alignment = 1
