@@ -465,7 +465,7 @@ def cetak_rapot(rapot_id):
 
     # Ambil rapot + murid
     cur.execute("""
-        SELECT r.jilid, r.tanggal, r.rata_rata,
+        SELECT r.id, r.jilid, r.tanggal, r.rata_rata,
                m.id as murid_id, m.nama, m.kelas, m.wali_kelas
         FROM rapot r
         JOIN murid m ON r.murid_id = m.id
@@ -484,12 +484,100 @@ def cetak_rapot(rapot_id):
         FROM nilai n
         JOIN mapel mp ON n.mapel_id=mp.id
         WHERE n.murid_id=%s AND n.jilid=%s
-    """, (rapot["murid_id"], rapot["jilid"]))  # ✅ perbaikan di sini
+    """, (rapot["murid_id"], rapot["jilid"]))
     nilai_jilid = cur.fetchall()
     cur.close()
     conn.close()
 
-    ...
+    # Format dict
+    nilai_dict = {row["nama"]: (row["nilai"], row["diskripsi"]) for row in nilai_jilid}
+
+    # Definisi kategori mapel
+    kategori_mapel = {
+        "BTQ": ["Kehadiran", "Bacaan", "Hafalan"],
+        "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid", "Bahasa Arab", "Pego", "Imla’/Khot", "Fiqih"],
+        "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
+    }
+
+    # --- Generate PDF ---
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # === KOP SURAT ===
+    elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", styles["Title"]))
+    elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", styles["Heading1"]))
+    elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", styles["Normal"]))
+    elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726", styles["Normal"]))
+    elements.append(Spacer(1, 6))
+    elements.append(Table([[" "]*1], colWidths=[450], style=[
+        ("LINEABOVE", (0,0), (-1,0), 1, colors.black)
+    ]))
+    elements.append(Spacer(1, 12))
+
+    # Judul
+    elements.append(Paragraph(f"<b>LAPORAN HASIL BELAJAR</b>", styles["Title"]))
+    elements.append(Paragraph(f"Jilid {rapot['jilid']}", styles["Heading2"]))
+    elements.append(Spacer(1, 12))
+
+    # Identitas murid
+    elements.append(Paragraph(f"<b>Nama:</b> {rapot['nama']}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Kelas:</b> {rapot['kelas']}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Wali Kelas:</b> {rapot['wali_kelas']}", styles["Normal"]))
+    # ✅ periksa apakah tanggal ada
+    if rapot["tanggal"]:
+        elements.append(Paragraph(f"<b>Tanggal:</b> {rapot['tanggal'].strftime('%d-%m-%Y')}", styles["Normal"]))
+    else:
+        elements.append(Paragraph("<b>Tanggal:</b> -", styles["Normal"]))
+    elements.append(Spacer(1, 12))
+
+    # Tabel per kategori
+    for kategori, daftar in kategori_mapel.items():
+        elements.append(Paragraph(f"<b>{kategori}</b>", styles["Heading3"]))
+
+        data = [["Mata Pelajaran", "Nilai", "Deskripsi"]]
+        for mp in daftar:
+            if mp in nilai_dict:
+                data.append([mp, str(nilai_dict[mp][0]), nilai_dict[mp][1]])
+            else:
+                data.append([mp, "-", "Belum ada deskripsi"])
+
+        table = Table(data, colWidths=[120, 50, 280])
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 12))
+
+    # Rata-rata
+    elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", styles["Normal"]))
+    elements.append(Spacer(1, 40))
+
+    # Tanda tangan
+    elements.append(Paragraph("Kepala Madrasah", styles["Normal"]))
+    elements.append(Spacer(1, 40))
+    elements.append(Paragraph("( Ust. Ahmad )", styles["Normal"]))  # bisa diganti sesuai kebutuhan
+    elements.append(Spacer(1, 40))
+    elements.append(Paragraph("Wali Kelas", styles["Normal"]))
+    elements.append(Spacer(1, 40))
+    elements.append(Paragraph(f"( {rapot['wali_kelas']} )", styles["Normal"]))
+    elements.append(Spacer(1, 40))
+    elements.append(Paragraph("Peserta Didik", styles["Normal"]))
+    elements.append(Spacer(1, 40))
+    elements.append(Paragraph(f"( {rapot['nama']} )", styles["Normal"]))
+
+    doc.build(elements)
+
+    buffer.seek(0)
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=f"rapot_jilid_{rapot['jilid']}.pdf",
+        mimetype="application/pdf"
+    )
 
 
 
