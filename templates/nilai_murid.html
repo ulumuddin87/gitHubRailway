@@ -13,14 +13,41 @@
       <li><b>Wali Kelas:</b> {{ murid.wali_kelas }}</li>
     </ul>
 
-    <!-- Pilih Semester -->
-    <div class="mb-3">
-      <label for="semester" class="form-label">Semester:</label>
-      <select name="semester" id="semester" form="formNilai" class="form-select" required>
-        <option value="Ganjil">Ganjil</option>
-        <option value="Genap">Genap</option>
-      </select>
+    
+    <!-- Pilih Semester dan Tombol Rapot -->
+<div class="mb-3 d-flex align-items-end gap-2">
+    <div class="flex-grow-1">
+        <label for="semester" class="form-label">Semester:</label>
+        <select name="semester" id="semester" class="form-select" required>
+            <option value="Ganjil">Ganjil</option>
+            <option value="Genap">Genap</option>
+        </select>
     </div>
+
+    {% if show_rapot_btn %}
+    <div class="d-flex align-items-end">
+        <a href="#" id="btnRapot" class="btn btn-primary" style="margin-bottom: 0;">
+            Lihat Rapot
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Script untuk mengarahkan tombol ke rapot sesuai semester -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const btnRapot = document.getElementById("btnRapot");
+    const semesterSelect = document.getElementById("semester");
+
+    if(btnRapot) {
+        btnRapot.addEventListener("click", function() {
+            const semester = semesterSelect.value;
+            const muridId = {{ murid.id }};  // pastikan murid.id tersedia
+            window.location.href = `/rapot/${muridId}/${semester}`;
+        });
+    }
+});
+</script>
 
     <!-- Form input nilai -->
     <form method="POST" id="formNilai" onsubmit="return confirmSubmit(event)">
