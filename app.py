@@ -535,25 +535,22 @@ def cetak_rapot(rapot_id):
     elements.append(Paragraph(f"Jilid {rapot['jilid']}", heading2))
     elements.append(Spacer(1, 12))
 
-    # === Identitas Murid (center table) ===
-
-
-    # === Identitas Murid (2 baris, dengan garis bawah) ===
+    # === Identitas Murid (mirip HTML) ===
     identitas_data = [
         ["Nama", f": {rapot['nama']}", "Kelas", f": {rapot['kelas']}"],
         ["Wali Kelas", f": {rapot['wali_kelas']}", "Tanggal",
-        f": {rapot['tanggal'].strftime('%d-%m-%Y') if rapot['tanggal'] else '-'}"]
+         f": {rapot['tanggal'].strftime('%d-%m-%Y') if rapot['tanggal'] else '-'}"]
     ]
 
-    identitas_table = Table(identitas_data, colWidths=[80, 180, 80, 180])
+    identitas_table = Table(identitas_data, colWidths=[90, 160, 90, 160])
     identitas_table.setStyle(TableStyle([
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
         ("FONTSIZE", (0, 0), (-1, -1), 11),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("LINEBELOW", (0, 0), (-1, 0), 0.5, colors.black),  # garis bawah baris 1
-        ("LINEBELOW", (0, 1), (-1, 1), 0.5, colors.black),  # garis bawah baris 2
+        ("LINEBELOW", (0, 0), (-1, 0), 1, colors.black),  # garis bawah baris 1
+        ("LINEBELOW", (0, 1), (-1, 1), 1, colors.black),  # garis bawah baris 2
+        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
     ]))
     elements.append(identitas_table)
     elements.append(Spacer(1, 16))
