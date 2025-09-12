@@ -17,21 +17,22 @@
         <h5>Jilid {{ jilid }}</h5>
     </div>
 
-    <!-- Identitas Murid -->
-    <table class="table table-borderless w-75 mx-auto mb-4">
-        <tr>
-            <td style="width: 30%;"><b>Nama</b></td>
-            <td>: {{ murid.nama }}</td>
-        </tr>
-        <tr>
-            <td><b>Kelas</b></td>
-            <td>: {{ murid.kelas }}</td>
-        </tr>
-        <tr>
-            <td><b>Wali Kelas</b></td>
-            <td>: {{ murid.wali_kelas }}</td>
-        </tr>
-    </table>
+   <!-- Identitas Murid -->
+<table class="table table-borderless w-75 mx-auto mb-4" style="font-size: 15px;">
+    <tr>
+        <td style="width: 25%;"><b>Nama Peserta Didik</b></td>
+        <td style="width: 25%;">: {{ murid.nama }}</td>
+        <td style="width: 25%;"><b>Kelas</b></td>
+        <td style="width: 25%;">: {{ murid.kelas }}</td>
+    </tr>
+    <tr>
+        <td><b>Wali Kelas</b></td>
+        <td>: {{ murid.wali_kelas }}</td>
+        <td><b>Tanggal</b></td>
+        <td>: {{ tanggal_cetak }}</td>
+    </tr>
+</table>
+
 
     <!-- Tabel Nilai per Kategori -->
     {% for kategori, daftar in kategori_mapel.items() %}
