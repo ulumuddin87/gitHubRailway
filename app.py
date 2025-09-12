@@ -357,7 +357,11 @@ def nilai_murid(id):
             flash("✅ Semua nilai & diskripsi berhasil diupload & Jilid naik!", "success")
             cur.close()
             conn.close()
-            return redirect(url_for("data_murid"))
+            return render_template(
+        "nilai_murid.html",
+        murid=murid,
+        mapel_list=mapel_list
+    )
 
    
 
