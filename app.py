@@ -365,6 +365,7 @@ def nilai_murid(id):
     )
 
 
+
 # ================= RIWAYAT NILAI MURID ================= #
 @app.route("/murid/riwayat/<int:id>")
 def riwayat_murid(id):
@@ -375,14 +376,13 @@ def riwayat_murid(id):
     cur.execute("SELECT * FROM murid WHERE id=%s", (id,))
     murid = cur.fetchone()
 
-    # Riwayat nilai lengkap (per mapel per jilid)
+    # Riwayat nilai langsung dari tabel nilai
     cur.execute("""
-        SELECT r.jilid, mp.nama AS mapel_nama, n.nilai, n.diskripsi, r.tanggal AS created_at
-        FROM rapot r
-        JOIN nilai n ON r.murid_id = n.murid_id AND r.jilid = n.jilid
+        SELECT n.jilid, mp.nama AS mapel_nama, n.nilai, n.diskripsi, n.created_at
+        FROM nilai n
         JOIN mapel mp ON n.mapel_id = mp.id
-        WHERE r.murid_id = %s
-        ORDER BY r.jilid ASC, mp.nama ASC
+        WHERE n.murid_id = %s
+        ORDER BY n.jilid ASC, mp.nama ASC
     """, (id,))
     riwayat = cur.fetchall()
 
@@ -390,6 +390,7 @@ def riwayat_murid(id):
     conn.close()
 
     return render_template("riwayat_murid.html", murid=murid, riwayat=riwayat)
+
 
 
 
