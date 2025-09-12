@@ -495,10 +495,8 @@ def cetak_rapot(rapot_id):
     cur.close()
     conn.close()
 
-    # Format dict
     nilai_dict = {row["nama"]: (row["nilai"], row["diskripsi"]) for row in nilai_jilid}
 
-    # Definisi kategori mapel
     kategori_mapel = {
         "BTQ": ["Kehadiran", "Bacaan", "Hafalan"],
         "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid",
@@ -508,64 +506,56 @@ def cetak_rapot(rapot_id):
 
     # --- Generate PDF ---
     buffer = BytesIO()
-    doc = SimpleDocTemplate(
-        buffer, pagesize=A4,
-        rightMargin=40, leftMargin=40,
-        topMargin=40, bottomMargin=30
-    )
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+                            rightMargin=40, leftMargin=40,
+                            topMargin=40, bottomMargin=30)
     elements = []
     styles = getSampleStyleSheet()
 
-    # === KOP SURAT ===
-    title_center = styles["Title"]
-    title_center.alignment = 1
+    # === KOP SURAT (center) ===
+    title_center = styles["Title"]; title_center.alignment = 1
+    heading_center = styles["Heading2"]; heading_center.alignment = 1
+    normal_center = styles["Normal"]; normal_center.alignment = 1
+
     elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", title_center))
-
-    subkop = styles["Heading2"]
-    subkop.alignment = 1
-    elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", subkop))
-
-    normal_center = styles["Normal"]
-    normal_center.alignment = 1
+    elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", heading_center))
     elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", normal_center))
     elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726", normal_center))
-    elements.append(Spacer(1, 8))
-    elements.append(Table([[""]], colWidths=[480], style=[
-        ("LINEABOVE", (0, 0), (-1, 0), 2, colors.black)
+    elements.append(Spacer(1, 6))
+    elements.append(Table([[""]], colWidths=[500], style=[
+        ("LINEABOVE", (0,0), (-1,0), 2, colors.black)
     ]))
-    elements.append(Spacer(1, 14))
+    elements.append(Spacer(1, 12))
 
-    # === JUDUL ===
-    judul = styles["Heading1"]
-    judul.alignment = 1
-    elements.append(Paragraph("<b>LAPORAN HASIL BELAJAR</b>", judul))
+    # === Judul Rapot (center) ===
+    heading1 = styles["Heading1"]; heading1.alignment = 1
+    heading2 = styles["Heading2"]; heading2.alignment = 1
 
-    subjudul = styles["Heading2"]
-    subjudul.alignment = 1
-    elements.append(Paragraph(f"Jilid {rapot['jilid']}", subjudul))
-    elements.append(Spacer(1, 20))
+    elements.append(Paragraph("<b>LAPORAN HASIL BELAJAR</b>", heading1))
+    elements.append(Paragraph(f"Jilid {rapot['jilid']}", heading2))
+    elements.append(Spacer(1, 12))
 
-    # === IDENTITAS MURID ===
+    # === Identitas Murid (center table) ===
     identitas_data = [
-        ["Nama", f": {rapot['nama']}", "Kelas", f": {rapot['kelas']}"],
-        ["Wali Kelas", f": {rapot['wali_kelas']}", "Tanggal",
-         f": {rapot['tanggal'].strftime('%d-%m-%Y') if rapot['tanggal'] else '-'}"]
+        ["Nama", f": {rapot['nama']}"],
+        ["Kelas", f": {rapot['kelas']}"],
+        ["Wali Kelas", f": {rapot['wali_kelas']}"],
+        ["Tanggal", f": {rapot['tanggal'].strftime('%d-%m-%Y') if rapot['tanggal'] else '-'}"]
     ]
-    identitas_table = Table(identitas_data, colWidths=[90, 180, 90, 180])
+    identitas_table = Table(identitas_data, colWidths=[100, 300])
     identitas_table.setStyle(TableStyle([
-        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
         ("FONTSIZE", (0, 0), (-1, -1), 11),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
     ]))
     elements.append(identitas_table)
-    elements.append(Spacer(1, 14))
+    elements.append(Spacer(1, 16))
 
-    # === NILAI PER KATEGORI ===
+    # === Tabel Nilai per Kategori ===
     for kategori, daftar in kategori_mapel.items():
-        kategori_style = styles["Heading3"]
-        kategori_style.alignment = 0
-        elements.append(Paragraph(f"<b>{kategori}</b>", kategori_style))
+        h3 = styles["Heading3"]; h3.alignment = 1
+        elements.append(Paragraph(f"<b>{kategori}</b>", h3))
 
         data = [["Mata Pelajaran", "Nilai", "Deskripsi"]]
         for mp in daftar:
@@ -578,30 +568,30 @@ def cetak_rapot(rapot_id):
         table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("ALIGN", (1, 1), (1, -1), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ]))
         elements.append(table)
         elements.append(Spacer(1, 12))
 
-    # === RATA-RATA ===
-    rata_style = styles["Normal"]
-    rata_style.alignment = 1
-    elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", rata_style))
+    # === Rata-rata (center) ===
+    normal_center = styles["Normal"]; normal_center.alignment = 1
+    elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", normal_center))
     elements.append(Spacer(1, 40))
 
-    # === TANDA TANGAN ===
+    # === Tanda Tangan (3 kolom, center) ===
+    kepala_madrasah = "Ustadz Ahmad"  # 👉 bisa diambil dari DB
     tanda_tangan = [
         ["Kepala Madrasah", "Wali Kelas", "Peserta Didik"],
         ["", "", ""],
         ["", "", ""],
-        ["( ................................ )", f"( {rapot['wali_kelas']} )", f"( {rapot['nama']} )"]
+        [f"( {kepala_madrasah} )", f"( {rapot['wali_kelas']} )", f"( {rapot['nama']} )"]
     ]
     tt_table = Table(tanda_tangan, colWidths=[160, 160, 160])
     tt_table.setStyle(TableStyle([
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("FONTSIZE", (0, 0), (-1, -1), 11),
         ("TOPPADDING", (0, 0), (-1, -1), 6),
     ]))
     elements.append(tt_table)
@@ -615,6 +605,7 @@ def cetak_rapot(rapot_id):
         download_name=f"rapot_jilid_{rapot['jilid']}.pdf",
         mimetype="application/pdf"
     )
+
 
 
 # ================= RUN ================= #
