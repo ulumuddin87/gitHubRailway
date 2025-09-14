@@ -8,24 +8,7 @@
     <a href="{{ url_for('add_murid') }}" class="btn btn-success btn-sm flex-fill">Tambah Murid</a>
     <a href="{{ url_for('data_mapel') }}" class="btn btn-warning btn-sm flex-fill">Mapel</a>
     <a href="{{ url_for('cetak_data') }}" class="btn btn-primary btn-sm flex-fill">Cetak Semua</a>
-      <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-      📄 Rapot
-    </button>
-    <ul class="dropdown-menu">
-      <li>
-        <a class="dropdown-item" href="{{ url_for('rapot', murid_id=m.id, semester='Ganjil') }}">
-          Semester Ganjil
-        </a>
-      </li>
-      <li>
-        <a class="dropdown-item" href="{{ url_for('rapot', murid_id=m.id, semester='Genap') }}">
-          Semester Genap
-        </a>
-      </li>
-    </ul>
-  </div>
-  </div>
-</div>
+   
 <!-- Form Pencarian & Filter -->
 <form method="GET" class="row g-2 mb-3">
   <div class="col-md-4">
@@ -98,6 +81,24 @@
  </div>
   <a href="{{ url_for('nilai_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Nilai</a>
   <a href="{{ url_for('riwayat_murid', id=m.id) }}" class="btn btn-sm btn-outline-dark mt-1">Riwayat</a>
+   <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+      📄 Rapot
+    </button>
+    <ul class="dropdown-menu">
+      <li>
+        <a class="dropdown-item" href="{{ url_for('rapot', murid_id=m.id, semester='Ganjil') }}">
+          Semester Ganjil
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="{{ url_for('rapot', murid_id=m.id, semester='Genap') }}">
+          Semester Genap
+        </a>
+      </li>
+    </ul>
+  </div>
+  </div>
+</div>
 </td>
 
 
