@@ -473,43 +473,37 @@ def hapus_mapel(id):
 
 
 # === Rapot ===
-
-
-# === Rapot ===
 @app.route("/rapot/<int:murid_id>/<semester>")
 def rapot(murid_id, semester):
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    try:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # ambil data murid
-    cur.execute("SELECT * FROM murid WHERE id = %s", (murid_id,))
-    murid = cur.fetchone()
+        # Ambil data murid
+        cur.execute("SELECT * FROM murid WHERE id = %s", (murid_id,))
+        murid = cur.fetchone()
+        if not murid:
+            return "Murid tidak ditemukan", 404
 
-    if not murid:
-        cur.close()
+        # Ambil nilai sesuai semester
+        cur.execute("""
+            SELECT n.nilai, n.deskripsi, m.nama AS mapel
+            FROM nilai n
+            JOIN mapel m ON m.id = n.mapel_id
+            WHERE n.murid_id = %s AND n.semester = %s
+            ORDER BY m.nama ASC
+        """, (murid_id, semester))
+        nilai_list = cur.fetchall()
+
+        return render_template(
+            "rapot.html",
+            murid=murid,
+            nilai_list=nilai_list,
+            semester=semester,
+            now=datetime.now()
+        )
+    finally:
         conn.close()
-        return "Murid tidak ditemukan", 404
-
-    # ambil nilai sesuai semester
-    cur.execute("""
-        SELECT n.nilai, n.deskripsi, m.nama AS mapel
-        FROM nilai n
-        JOIN mapel m ON m.id = n.mapel_id
-        WHERE n.murid_id = %s AND n.semester = %s
-        ORDER BY m.nama
-    """, (murid_id, semester))
-    nilai_list = cur.fetchall()
-
-    cur.close()
-    conn.close()
-
-    return render_template(
-        "rapot.html",
-        murid=murid,
-        nilai_list=nilai_list,
-        semester=semester,
-        now=datetime.now()   # ✅ Tambahin ini
-    )
 
 
 # ================= RUN ================= #
