@@ -62,45 +62,36 @@
         <td>{{ m.wali_murid }}</td>
         <td>{{ m.wali_kelas }}</td>
 
+
 <!-- Status Nilai -->
-<td class="text-center 
-  {% if m.nilai_bacaan and m.nilai_menulis and m.nilai_hafalan and m.nilai_ahlak and m.nilai_kehadiran %}
-    bg-success text-white
-  {% elif m.nilai_bacaan or m.nilai_menulis or m.nilai_hafalan or m.nilai_ahlak or m.nilai_kehadiran %}
-    bg-warning
-  {% else %}
-    bg-white text-black
-  {% endif %}
-">
-  {% if m.nilai_bacaan and m.nilai_menulis and m.nilai_hafalan and m.nilai_ahlak and m.nilai_kehadiran %}
-    Lengkap
-  {% elif m.nilai_bacaan or m.nilai_menulis or m.nilai_hafalan or m.nilai_ahlak or m.nilai_kehadiran %}
-    Ada Kosong
-  {% else %}
-    Belum
-  {% endif %}
- </div>
-  <a href="{{ url_for('nilai_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Nilai</a>
-  <a href="{{ url_for('riwayat_murid', id=m.id) }}" class="btn btn-sm btn-outline-dark mt-1">Riwayat</a>
-</td>
- <!-- Tombol Rapot -->
-  <div class="btn-group mt-1">
-    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-      📄 Rapot
-    </button>
-    <ul class="dropdown-menu">
-      <li>
-        <a class="dropdown-item" href="{{ url_for('rapot', murid_id=m.id, semester='Ganjil') }}">
-          Semester Ganjil
-        </a>
-      </li>
-      <li>
-        <a class="dropdown-item" href="{{ url_for('rapot', murid_id=m.id, semester='Genap') }}">
-          Semester Genap
-        </a>
-      </li>
-    </ul>
+<td class="text-center">
+  <div class="d-flex flex-column gap-1">
+    <!-- Tombol Nilai -->
+    <a href="{{ url_for('nilai_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Nilai</a>
+
+    <!-- Tombol Riwayat -->
+    <a href="{{ url_for('riwayat_murid', id=m.id) }}" class="btn btn-sm btn-outline-dark">Riwayat</a>
+
+    <!-- Tombol Rapot Dropdown -->
+    <div class="btn-group">
+      <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        📄 Rapot
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+          <a class="dropdown-item" href="{{ url_for('rapot', murid_id=m.id, semester='Ganjil') }}">
+            Semester Ganjil
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="{{ url_for('rapot', murid_id=m.id, semester='Genap') }}">
+            Semester Genap
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
+</td>
 
 
 <!-- Aksi -->
