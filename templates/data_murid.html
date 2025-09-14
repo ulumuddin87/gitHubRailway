@@ -8,7 +8,8 @@
     <a href="{{ url_for('add_murid') }}" class="btn btn-success btn-sm flex-fill">Tambah Murid</a>
     <a href="{{ url_for('data_mapel') }}" class="btn btn-warning btn-sm flex-fill">Mapel</a>
     <a href="{{ url_for('cetak_data') }}" class="btn btn-primary btn-sm flex-fill">Cetak Semua</a>
-   
+  </div>
+</div>
 <!-- Form Pencarian & Filter -->
 <form method="GET" class="row g-2 mb-3">
   <div class="col-md-4">
@@ -63,25 +64,12 @@
 
 <!-- Status Nilai -->
 <td class="text-center 
-  {% if m.nilai_bacaan and m.nilai_menulis and m.nilai_hafalan and m.nilai_ahlak and m.nilai_kehadiran %}
-    bg-success text-white
-  {% elif m.nilai_bacaan or m.nilai_menulis or m.nilai_hafalan or m.nilai_ahlak or m.nilai_kehadiran %}
-    bg-warning
-  {% else %}
-    bg-white text-black
-  {% endif %}
-">
-  {% if m.nilai_bacaan and m.nilai_menulis and m.nilai_hafalan and m.nilai_ahlak and m.nilai_kehadiran %}
-    Lengkap
-  {% elif m.nilai_bacaan or m.nilai_menulis or m.nilai_hafalan or m.nilai_ahlak or m.nilai_kehadiran %}
-    Ada Kosong
-  {% else %}
-    Belum
-  {% endif %}
- </div>
   <a href="{{ url_for('nilai_murid', id=m.id) }}" class="btn btn-sm btn-secondary">Nilai</a>
   <a href="{{ url_for('riwayat_murid', id=m.id) }}" class="btn btn-sm btn-outline-dark mt-1">Riwayat</a>
-   <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+</td>
+ <!-- Tombol Rapot -->
+  <div class="btn-group mt-1">
+    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
       📄 Rapot
     </button>
     <ul class="dropdown-menu">
@@ -97,10 +85,6 @@
       </li>
     </ul>
   </div>
-  </div>
-</div>
-</td>
-
 
 
 <!-- Aksi -->
