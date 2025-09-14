@@ -475,9 +475,14 @@ def rapot(murid_id, semester):
     cur.execute("SELECT * FROM murid WHERE id = %s", (murid_id,))
     murid = cur.fetchone()
 
+    if not murid:
+        cur.close()
+        conn.close()
+        return "Murid tidak ditemukan", 404
+
     # ambil nilai sesuai semester
     cur.execute("""
-        SELECT n.nilai, n.deskripsi, m.nama AS mapel
+        SELECT n.nilai, n.diskripsi, m.nama AS mapel
         FROM nilai n
         JOIN mapel m ON m.id = n.mapel_id
         WHERE n.murid_id = %s AND n.semester = %s
@@ -487,6 +492,9 @@ def rapot(murid_id, semester):
 
     cur.close()
     conn.close()
+
+    return render_template("rapot.html", murid=murid, nilai_list=nilai_list, semester=semester)
+
 
 # ================= RUN ================= #
 
