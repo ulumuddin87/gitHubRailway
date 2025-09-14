@@ -465,6 +465,7 @@ def hapus_mapel(id):
     flash("🗑️ Mapel berhasil dihapus!", "success")
     return redirect(request.referrer)
 
+
 # === Rapot ===
 @app.route("/rapot/<int:murid_id>/<semester>")
 def rapot(murid_id, semester):
@@ -480,11 +481,11 @@ def rapot(murid_id, semester):
         conn.close()
         return "Murid tidak ditemukan", 404
 
-    # Ambil nilai sesuai semester (ikutkan kelompok mapel)
+    # Ambil nilai sesuai semester (sudah pakai kolom deskripsi yang benar)
     cur.execute("""
         SELECT 
             n.nilai, 
-            COALESCE(n.deskripsi, n.diskripsi) AS deskripsi, 
+            n.deskripsi, 
             m.nama AS mapel,
             COALESCE(m.kelompok, 'LAINNYA') AS kelompok
         FROM nilai n
@@ -497,7 +498,7 @@ def rapot(murid_id, semester):
     cur.close()
     conn.close()
 
-    # Tambahkan variabel waktu sekarang untuk ditampilkan di rapot
+    # Tambahkan variabel waktu sekarang untuk cetak rapot
     from datetime import datetime
     now = datetime.now()
 
