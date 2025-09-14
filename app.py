@@ -288,8 +288,8 @@ def biodata_murid(id):
     return render_template("biodata_murid.html", murid=murid)
 
 
+# ================= NILAI  ================= #
 
-# ================= NILAI ================= #
 @app.route("/nilai/<int:id>", methods=["GET", "POST"])
 def nilai_murid(id):
     conn = get_db_connection()
@@ -362,7 +362,6 @@ def nilai_murid(id):
         nilai_existing=nilai_existing,
         show_rapot_btn=True
     )
-
 
 
 
