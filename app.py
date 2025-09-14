@@ -482,7 +482,7 @@ def rapot(murid_id, semester):
 
     # ambil nilai sesuai semester
     cur.execute("""
-        SELECT n.nilai, n.diskripsi, m.nama AS mapel
+        SELECT n.nilai, n.deskripsi, m.nama AS mapel
         FROM nilai n
         JOIN mapel m ON m.id = n.mapel_id
         WHERE n.murid_id = %s AND n.semester = %s
