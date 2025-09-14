@@ -473,6 +473,9 @@ def hapus_mapel(id):
 
 
 # === Rapot ===
+
+
+# === Rapot ===
 @app.route("/rapot/<int:murid_id>/<semester>")
 def rapot(murid_id, semester):
     conn = get_db_connection()
@@ -481,6 +484,7 @@ def rapot(murid_id, semester):
     # ambil data murid
     cur.execute("SELECT * FROM murid WHERE id = %s", (murid_id,))
     murid = cur.fetchone()
+
     if not murid:
         cur.close()
         conn.close()
@@ -504,9 +508,8 @@ def rapot(murid_id, semester):
         murid=murid,
         nilai_list=nilai_list,
         semester=semester,
-        now=datetime.now()   # 🔑 ditambahkan agar tidak error di template
+        now=datetime.now()   # ✅ Tambahin ini
     )
-
 
 
 # ================= RUN ================= #
