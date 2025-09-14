@@ -480,9 +480,9 @@ def rapot(murid_id, semester):
         conn.close()
         return "Murid tidak ditemukan", 404
 
-    # ambil nilai sesuai semester
+    # ambil nilai sesuai semester (pakai alias agar aman)
     cur.execute("""
-        SELECT n.nilai, n.deskripsi, m.nama AS mapel
+        SELECT n.nilai, n.diskripsi AS deskripsi, m.nama AS mapel
         FROM nilai n
         JOIN mapel m ON m.id = n.mapel_id
         WHERE n.murid_id = %s AND n.semester = %s
