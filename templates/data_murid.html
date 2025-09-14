@@ -95,14 +95,18 @@
 
 
 <!-- Aksi -->
-<td class="text-center">
-  <div class="d-flex flex-column gap-1">
-    <a href="{{ url_for('edit_murid', id=m.id) }}" class="btn btn-sm btn-info">✏️ Edit</a>
-    <a href="{{ url_for('delete_murid', id=m.id) }}" class="btn btn-sm btn-danger"
-       onclick="return confirm('Yakin ingin menghapus data ini?')">🗑️ Hapus</a>
-    <a href="{{ url_for('biodata_murid', id=m.id) }}" class="btn btn-sm btn-primary">📋 Biodata</a>
-  </div>
-</td>
+        <td class="text-center">
+           <div class="d-flex flex-column gap-1">
+          <a href="{{ url_for('edit_murid', id=m.id) }}" class="btn btn-sm btn-info">Edit</a>
+          <a href="{{ url_for('delete_murid', id=m.id) }}" class="btn btn-sm btn-danger"
+             onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</a>
+          <a href="{{ url_for('biodata_murid', id=m.id) }}" class="btn btn-sm btn-primary">Biodata</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
 
 <script>
