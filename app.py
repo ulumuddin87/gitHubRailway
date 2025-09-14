@@ -318,38 +318,39 @@ def nilai_murid(id):
         else:
             tahun_ajaran = f"{now.year - 1}/{now.year}"
 
-        if action == "simpan" or action == "upload":
+        if action == "upload":
             for m in mapel_list:
                 nilai = request.form.get(f"mapel_{m['id']}")
-                diskripsi = request.form.get(f"diskripsi_{m['id']}")
+                deskripsi = request.form.get(f"deskripsi_{m['id']}")
 
-                if action == "upload" and (not nilai or not diskripsi):
+                if not nilai or not deskripsi:
                     flash(f"⚠️ Nilai atau deskripsi untuk {m['nama']} belum lengkap!", "danger")
                     cur.close()
                     conn.close()
                     return redirect(request.url)
 
-                if nilai:  # hanya simpan jika ada nilai
-                    cur.execute("""
-                        INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, diskripsi)
-                        VALUES (%s, %s, %s, %s, %s, %s)
-                        ON CONFLICT (murid_id, mapel_id, semester, tahun_ajaran)
-                        DO UPDATE SET nilai = EXCLUDED.nilai, diskripsi = EXCLUDED.diskripsi
-                    """, (id, m["id"], semester, tahun_ajaran, nilai, diskripsi))
+                cur.execute("""
+                    INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, deskripsi)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (murid_id, mapel_id, semester, tahun_ajaran)
+                    DO UPDATE SET nilai = EXCLUDED.nilai, deskripsi = EXCLUDED.deskripsi
+                """, (id, m["id"], semester, tahun_ajaran, nilai, deskripsi))
 
             conn.commit()
-            msg = "✅ Semua nilai & deskripsi berhasil disimpan!" if action == "upload" else "💾 Nilai sementara berhasil disimpan!"
-            flash(msg, "success" if action == "upload" else "info")
+            flash("✅ Semua nilai & deskripsi berhasil disimpan!", "success")
             cur.close()
             conn.close()
             return redirect(request.url)
 
-    # Ambil nilai existing untuk form GET
+    # Ambil nilai existing untuk tampilkan di form (edit/update)
     nilai_existing = {}
-    cur.execute("SELECT mapel_id, nilai, diskripsi, semester, tahun_ajaran FROM nilai WHERE murid_id=%s", (id,))
+    cur.execute("""
+        SELECT mapel_id, nilai, deskripsi, semester, tahun_ajaran
+        FROM nilai WHERE murid_id=%s
+    """, (id,))
     for row in cur.fetchall():
         key = (row["mapel_id"], row["semester"], row["tahun_ajaran"])
-        nilai_existing[key] = {"nilai": row["nilai"], "diskripsi": row["diskripsi"]}
+        nilai_existing[key] = {"nilai": row["nilai"], "deskripsi": row["deskripsi"]}
 
     cur.close()
     conn.close()
@@ -358,8 +359,10 @@ def nilai_murid(id):
         "nilai_murid.html",
         murid=murid,
         mapel_list=mapel_list,
-        nilai_existing=nilai_existing
+        nilai_existing=nilai_existing,
+        show_rapot_btn=True
     )
+
 
 
 
