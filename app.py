@@ -380,10 +380,10 @@ def riwayat_murid(id):
         conn.close()
         return "Data murid tidak ditemukan", 404
 
-    # Riwayat nilai
+    # Riwayat nilai (pakai kolom deskripsi)
     cur.execute("""
         SELECT n.tahun_ajaran, n.semester, mp.nama AS mapel_nama, 
-               n.nilai, n.diskripsi, n.created_at
+               n.nilai, n.deskripsi, n.created_at
         FROM nilai n
         JOIN mapel mp ON n.mapel_id = mp.id
         WHERE n.murid_id = %s
@@ -395,6 +395,7 @@ def riwayat_murid(id):
     conn.close()
 
     return render_template("riwayat_murid.html", murid=murid, riwayat=riwayat)
+
 
 
 
@@ -469,6 +470,8 @@ def hapus_mapel(id):
     return redirect(request.referrer)
 
 
+from datetime import datetime
+
 # === Rapot ===
 @app.route("/rapot/<int:murid_id>/<semester>")
 def rapot(murid_id, semester):
@@ -478,7 +481,6 @@ def rapot(murid_id, semester):
     # ambil data murid
     cur.execute("SELECT * FROM murid WHERE id = %s", (murid_id,))
     murid = cur.fetchone()
-
     if not murid:
         cur.close()
         conn.close()
@@ -501,7 +503,8 @@ def rapot(murid_id, semester):
         "rapot.html",
         murid=murid,
         nilai_list=nilai_list,
-        semester=semester
+        semester=semester,
+        now=datetime.now()   # 🔑 ditambahkan agar tidak error di template
     )
 
 

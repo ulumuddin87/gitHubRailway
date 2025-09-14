@@ -62,7 +62,7 @@
                 <tr>
                     <td>{{ n.mapel|default('-') }}</td>
                     <td class="text-center">{{ n.nilai|default('-') }}</td>
-                    <td>{{ n.deskripsi|default(n.diskripsi|default('-')) }}</td>
+                    <td>{{ n.deskripsi|default('-') }}</td>
                 </tr>
             {% endfor %}
         {% else %}
