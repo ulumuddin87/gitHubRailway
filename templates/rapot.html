@@ -11,93 +11,43 @@
         <hr style="border: 2px solid black;">
     </div>
 
-    <!-- Judul Rapot -->
-    <div class="text-center mb-4">
-        <h3><b>LAPORAN HASIL BELAJAR</b></h3>
-        <h5>Jilid {{ jilid }}</h5>
+<div class="card shadow">
+  <div class="card-header bg-primary text-white text-center">
+    <h4>RAPOR SISWA</h4>
+  </div>
+  <div class="card-body">
+    <div class="mb-3">
+      <p><b>Nama:</b> {{ murid.nama }}</p>
+      <p><b>Kelas:</b> {{ murid.kelas }}</p>
+      <p><b>Wali Kelas:</b> {{ murid.wali_kelas }}</p>
+      <p><b>Semester:</b> {{ semester }}</p>
     </div>
 
-  <!-- Identitas Murid -->
-<table class="table w-75 mx-auto mb-4" style="font-size: 15px; border-collapse: collapse;">
-    <tr>
-        <td style="width: 25%; border-bottom: 1px solid #000;"><b>Nama</b></td>
-        <td style="width: 25%; border-bottom: 1px solid #000;">: {{ murid.nama }}</td>
-        <td style="width: 25%; border-bottom: 1px solid #000;"><b>Kelas</b></td>
-        <td style="width: 25%; border-bottom: 1px solid #000;">: {{ murid.kelas }}</td>
-    </tr>
-    <tr>
-        <td style="border-bottom: 1px solid #000;"><b>Wali Kelas</b></td>
-        <td style="border-bottom: 1px solid #000;">: {{ murid.wali_kelas }}</td>
-        <td style="border-bottom: 1px solid #000;"><b>Tanggal</b></td>
-        <td style="border-bottom: 1px solid #000;">: {{ tanggal_cetak }}</td>
-    </tr>
-</table>
-
-
-
-    <!-- Tabel Nilai per Kategori -->
-    {% for kategori, daftar in kategori_mapel.items() %}
-    <h5 class="mt-4"><b>{{ kategori }}</b></h5>
-    <table class="table table-bordered" style="font-size: 14px;">
-        <thead class="table-light">
-            <tr class="text-center">
-                <th style="width: 25%;">Mata Pelajaran</th>
-                <th style="width: 10%;">Nilai</th>
-                <th style="width: 65%;">Deskripsi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for mp in daftar %}
-            <tr>
-                <td>{{ mp }}</td>
-                <td class="text-center">
-                    {% if mp in nilai_dict %}
-                        {{ nilai_dict[mp][0] }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                <td>
-                    {% if mp in nilai_dict %}
-                        {{ nilai_dict[mp][1] }}
-                    {% else %}
-                        Belum ada deskripsi
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+    <table class="table table-bordered table-striped">
+      <thead class="table-dark">
+        <tr>
+          <th style="width: 5%">No</th>
+          <th>Mata Pelajaran</th>
+          <th style="width: 10%">Nilai</th>
+          <th>Deskripsi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for idx, n in enumerate(nilai_list, start=1) %}
+        <tr>
+          <td>{{ idx }}</td>
+          <td>{{ n.mapel }}</td>
+          <td class="text-center">{{ n.nilai }}</td>
+          <td>{{ n.deskripsi }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
-    {% endfor %}
 
-    <!-- Tombol Cetak PDF -->
-    <div class="text-center mt-4">
-        <a href="{{ url_for('cetak_rapot', rapot_id=rapot_id) }}" class="btn btn-success">
-            Cetak Rapot PDF
-        </a>
-        <a href="{{ url_for('nilai_murid', id=murid['id']) }}" class="btn btn-secondary">
-            ⬅ Kembali ke Nilai Murid
-        </a>
+    <div class="mt-4 d-flex justify-content-between">
+      <p><b>Tanggal Cetak:</b> {{ tanggal }}</p>
+      <a href="{{ url_for('nilai_murid', id=murid.id) }}" class="btn btn-secondary">⬅ Kembali</a>
     </div>
-
-    <!-- Tanda Tangan -->
-    <div class="row mt-5">
-        <div class="col text-center">
-            <p>Kepala Madrasah</p>
-            <br><br><br>
-            <p>( {{ kepala_madrasah }} )</p>
-        </div>
-        <div class="col text-center">
-            <p>Wali Kelas</p>
-            <br><br><br>
-            <p>( {{ murid.wali_kelas }} )</p>
-        </div>
-        <div class="col text-center">
-            <p>Peserta Didik</p>
-            <br><br><br>
-            <p>( {{ murid.nama }} )</p>
-        </div>
-    </div>
+  </div>
 </div>
-
 {% endblock %}

@@ -465,221 +465,28 @@ def hapus_mapel(id):
     flash("🗑️ Mapel berhasil dihapus!", "success")
     return redirect(request.referrer)
 
-
-
-
-# ================= RAPOT ================= #
-@app.route("/rapot/<int:murid_id>/<int:jilid>")
-def rapot(murid_id, jilid):
+# === Rapot ===
+@app.route("/rapot/<int:murid_id>/<semester>")
+def rapot(murid_id, semester):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # Data murid
-    cur.execute("SELECT id, nama, kelas, wali_kelas FROM murid WHERE id=%s", (murid_id,))
+    # ambil data murid
+    cur.execute("SELECT * FROM murid WHERE id = %s", (murid_id,))
     murid = cur.fetchone()
 
-    # Ambil nilai mapel
+    # ambil nilai sesuai semester
     cur.execute("""
-        SELECT m.nama, n.nilai, n.diskripsi
+        SELECT n.nilai, n.deskripsi, m.nama AS mapel
         FROM nilai n
-        JOIN mapel m ON n.mapel_id = m.id
-        WHERE n.murid_id=%s AND n.jilid=%s
-    """, (murid_id, jilid))
-    nilai_jilid = cur.fetchall()
-
-    # Hitung rata-rata
-    rata_rata = sum([row["nilai"] for row in nilai_jilid]) / len(nilai_jilid) if nilai_jilid else 0
-
-    # Simpan / ambil rapot_id
-    cur.execute("SELECT id, tanggal FROM rapot WHERE murid_id=%s AND jilid=%s", (murid_id, jilid))
-    ada = cur.fetchone()
-    if not ada:
-        cur.execute(
-            "INSERT INTO rapot (murid_id, jilid, rata_rata, tanggal) VALUES (%s, %s, %s, %s) RETURNING id, tanggal",
-            (murid_id, jilid, rata_rata, date.today())
-        )
-        rapot_row = cur.fetchone()
-        rapot_id, tanggal_cetak = rapot_row["id"], rapot_row["tanggal"]
-        conn.commit()
-    else:
-        rapot_id, tanggal_cetak = ada["id"], ada["tanggal"]
+        JOIN mapel m ON m.id = n.mapel_id
+        WHERE n.murid_id = %s AND n.semester = %s
+        ORDER BY m.nama
+    """, (murid_id, semester))
+    nilai_list = cur.fetchall()
 
     cur.close()
     conn.close()
-
-    # Struktur kategori mapel
-    kategori_mapel = {
-        "BTQ": ["Kehadiran", "Bacaan", "Hafalan"],
-        "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid", "Bahasa Arab", "Pego", "Imla’/Khot", "Fiqih"],
-        "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
-    }
-
-    # Ubah hasil query ke dict
-    nilai_dict = {row["nama"]: (row["nilai"], row["diskripsi"]) for row in nilai_jilid}
-
-    return render_template(
-        "rapot.html",
-        murid=murid,
-        jilid=jilid,
-        kategori_mapel=kategori_mapel,
-        nilai_dict=nilai_dict,
-        rapot_id=rapot_id,
-        rata_rata=rata_rata,
-        tanggal_cetak=tanggal_cetak.strftime("%d-%m-%Y"),  # ✅ tampilkan format tanggal
-        kepala_madrasah="Ust. Ahmad"  # ✅ bisa diganti sesuai kebutuhan
-    )
-
-
-
-# ================= CETAK RAPOT ================= #
-@app.route("/rapot/cetak/<int:rapot_id>")
-def cetak_rapot(rapot_id):
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
-    # Ambil rapot + murid
-    cur.execute("""
-        SELECT r.jilid, r.tanggal, r.rata_rata,
-               m.nama, m.kelas, m.wali_kelas, m.id
-        FROM rapot r
-        JOIN murid m ON r.murid_id = m.id
-        WHERE r.id=%s
-    """, (rapot_id,))
-    rapot = cur.fetchone()
-
-    if not rapot:
-        cur.close()
-        conn.close()
-        return "Rapot tidak ditemukan", 404
-
-    # Ambil nilai & deskripsi
-    cur.execute("""
-        SELECT mp.nama, n.nilai, n.diskripsi
-        FROM nilai n
-        JOIN mapel mp ON n.mapel_id=mp.id
-        WHERE n.murid_id=%s AND n.jilid=%s
-    """, (rapot["id"], rapot["jilid"]))
-    nilai_jilid = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    nilai_dict = {row["nama"]: (row["nilai"], row["diskripsi"]) for row in nilai_jilid}
-
-    kategori_mapel = {
-        "BTQ": ["Kehadiran", "Bacaan", "Hafalan"],
-        "Diniyah": ["Al-Qur’an Hadits", "Aqidah Akhlaq", "Tajwid",
-                    "Bahasa Arab", "Pego", "Imla’/Khot", "Fiqih"],
-        "Praktek": ["Wudhu", "Shalat", "Doa sehari-hari"]
-    }
-
-    # --- Generate PDF ---
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4,
-                            rightMargin=40, leftMargin=40,
-                            topMargin=40, bottomMargin=30)
-    elements = []
-    styles = getSampleStyleSheet()
-
-    # === KOP SURAT (center) ===
-    title_center = styles["Title"]; title_center.alignment = 1
-    heading_center = styles["Heading2"]; heading_center.alignment = 1
-    normal_center = styles["Normal"]; normal_center.alignment = 1
-
-    elements.append(Paragraph("<b>TAMAN PENDIDIKAN AL QUR'AN</b>", title_center))
-    elements.append(Paragraph("<b>“MAFATIHUL HUDA”</b>", heading_center))
-    elements.append(Paragraph("BAKALANRAYUNG KECAMATAN KUDU – JOMBANG", normal_center))
-    elements.append(Paragraph("Nomor Statistik : 411.235.17.2074  |  Telp. 0857-3634-0726", normal_center))
-    elements.append(Spacer(1, 6))
-    elements.append(Table([[""]], colWidths=[500], style=[
-        ("LINEABOVE", (0,0), (-1,0), 2, colors.black)
-    ]))
-    elements.append(Spacer(1, 12))
-
-    # === Judul Rapot (center) ===
-    heading1 = styles["Heading1"]; heading1.alignment = 1
-    heading2 = styles["Heading2"]; heading2.alignment = 1
-
-    elements.append(Paragraph("<b>LAPORAN HASIL BELAJAR</b>", heading1))
-    elements.append(Paragraph(f"Jilid {rapot['jilid']}", heading2))
-    elements.append(Spacer(1, 12))
-
-# === Identitas Murid (mirip HTML) ===
-    identitas_data = [
-        ["Nama", f": {rapot['nama']}", "Kelas", f": {rapot['kelas']}"],
-        ["Wali Kelas", f": {rapot['wali_kelas']}", "Tanggal",
-         f": {rapot['tanggal'].strftime('%d-%m-%Y') if rapot['tanggal'] else '-'}"]
-    ]
-
-    identitas_table = Table(identitas_data, colWidths=[90, 160, 90, 160])
-    identitas_table.setStyle(TableStyle([
-        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-        ("FONTSIZE", (0, 0), (-1, -1), 11),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ("LINEBELOW", (0, 0), (-1, 0), 1, colors.black),  # garis bawah baris 1
-        ("LINEBELOW", (0, 1), (-1, 1), 1, colors.black),  # garis bawah baris 2
-        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-    ]))
-    elements.append(identitas_table)
-    elements.append(Spacer(1, 16))
-
-    
-
-    # === Tabel Nilai per Kategori ===
-    for kategori, daftar in kategori_mapel.items():
-        h3 = styles["Heading3"]; h3.alignment = 1
-        elements.append(Paragraph(f"<b>{kategori}</b>", h3))
-
-        data = [["Mata Pelajaran", "Nilai", "Deskripsi"]]
-        for mp in daftar:
-            if mp in nilai_dict:
-                data.append([mp, str(nilai_dict[mp][0]), nilai_dict[mp][1]])
-            else:
-                data.append([mp, "-", "Belum ada deskripsi"])
-
-        table = Table(data, colWidths=[150, 50, 250])
-        table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ]))
-        elements.append(table)
-        elements.append(Spacer(1, 12))
-
-    # === Rata-rata (center) ===
-    normal_center = styles["Normal"]; normal_center.alignment = 1
-    elements.append(Paragraph(f"<b>Rata-rata:</b> {rapot['rata_rata']:.2f}", normal_center))
-    elements.append(Spacer(1, 40))
-
-    # === Tanda Tangan (3 kolom, center) ===
-    kepala_madrasah = "Ustadz Ahmad"  # 👉 bisa diambil dari DB
-    tanda_tangan = [
-        ["Kepala Madrasah", "Wali Kelas", "Peserta Didik"],
-        ["", "", ""],
-        ["", "", ""],
-        [f"( {kepala_madrasah} )", f"( {rapot['wali_kelas']} )", f"( {rapot['nama']} )"]
-    ]
-    tt_table = Table(tanda_tangan, colWidths=[160, 160, 160])
-    tt_table.setStyle(TableStyle([
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-        ("FONTSIZE", (0, 0), (-1, -1), 11),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-    ]))
-    elements.append(tt_table)
-
-    doc.build(elements)
-
-    buffer.seek(0)
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name=f"rapot_jilid_{rapot['jilid']}.pdf",
-        mimetype="application/pdf"
-    )
-
-
 
 # ================= RUN ================= #
 
