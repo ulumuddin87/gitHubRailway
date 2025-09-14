@@ -8,6 +8,22 @@
     <a href="{{ url_for('add_murid') }}" class="btn btn-success btn-sm flex-fill">Tambah Murid</a>
     <a href="{{ url_for('data_mapel') }}" class="btn btn-warning btn-sm flex-fill">Mapel</a>
     <a href="{{ url_for('cetak_data') }}" class="btn btn-primary btn-sm flex-fill">Cetak Semua</a>
+      <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+      📄 Rapot
+    </button>
+    <ul class="dropdown-menu">
+      <li>
+        <a class="dropdown-item" href="{{ url_for('rapot', murid_id=m.id, semester='Ganjil') }}">
+          Semester Ganjil
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="{{ url_for('rapot', murid_id=m.id, semester='Genap') }}">
+          Semester Genap
+        </a>
+      </li>
+    </ul>
+  </div>
   </div>
 </div>
 <!-- Form Pencarian & Filter -->
