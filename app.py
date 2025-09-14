@@ -472,7 +472,7 @@ def rapot(murid_id, semester):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # Ambil data murid
+    # ambil data murid
     cur.execute("SELECT * FROM murid WHERE id = %s", (murid_id,))
     murid = cur.fetchone()
 
@@ -481,33 +481,24 @@ def rapot(murid_id, semester):
         conn.close()
         return "Murid tidak ditemukan", 404
 
-    # Ambil nilai sesuai semester (sudah pakai kolom deskripsi yang benar)
+    # ambil nilai sesuai semester
     cur.execute("""
-        SELECT 
-            n.nilai, 
-            n.deskripsi, 
-            m.nama AS mapel,
-            COALESCE(m.kelompok, 'LAINNYA') AS kelompok
+        SELECT n.nilai, n.deskripsi, m.nama AS mapel
         FROM nilai n
         JOIN mapel m ON m.id = n.mapel_id
         WHERE n.murid_id = %s AND n.semester = %s
-        ORDER BY m.kelompok, m.nama
+        ORDER BY m.nama
     """, (murid_id, semester))
     nilai_list = cur.fetchall()
 
     cur.close()
     conn.close()
 
-    # Tambahkan variabel waktu sekarang untuk cetak rapot
-    from datetime import datetime
-    now = datetime.now()
-
     return render_template(
         "rapot.html",
         murid=murid,
         nilai_list=nilai_list,
-        semester=semester,
-        now=now
+        semester=semester
     )
 
 
