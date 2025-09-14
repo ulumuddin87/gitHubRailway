@@ -10,7 +10,6 @@
         .kop-surat hr { border: 2px solid black; }
         .rapot-title { text-align: center; margin: 20px 0; }
         .table th, .table td { vertical-align: middle; }
-        .table-section { background-color: #f8f9fa; font-weight: bold; }
     </style>
 </head>
 <body class="bg-light">
@@ -51,14 +50,7 @@
         </thead>
         <tbody>
         {% if nilai_list and nilai_list|length > 0 %}
-            {% set current_group = None %}
             {% for n in nilai_list %}
-                {% if current_group != n.kelompok %}
-                    <tr class="table-section">
-                        <td colspan="3">{{ n.kelompok|default('LAINNYA') }}</td>
-                    </tr>
-                    {% set current_group = n.kelompok %}
-                {% endif %}
                 <tr>
                     <td>{{ n.mapel|default('-') }}</td>
                     <td class="text-center">{{ n.nilai|default('-') }}</td>

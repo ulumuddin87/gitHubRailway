@@ -470,7 +470,7 @@ def hapus_mapel(id):
     return redirect(request.referrer)
 
 
-from datetime import datetime
+
 
 # === Rapot ===
 @app.route("/rapot/<int:murid_id>/<semester>")
