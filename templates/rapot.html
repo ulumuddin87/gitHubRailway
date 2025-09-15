@@ -70,7 +70,7 @@
     </div>
 
     <h2>TAMAN PENDIDIKAN AL QUR'AN <br>“MAFATIHUL HUDA”</h2>
-    <p class="center">BAKALANRAYUNG KECAMATAN KUDU – JOMBANG<br>
+    <p class="center">DEDSA BAKALANRAYUNG KECAMATAN KUDU KABUPATEN JOMBANG<br>
     Nomor Statistik: 411.235.17.2074 | Telp. 0857-3634-0726</p>
     <hr class="kop">
 
@@ -81,23 +81,22 @@
     
     
 
-   
-    <!-- Biodata -->
-    <div class="header-info">
-        <div>
-            <div><strong>Nama:</strong> {{ murid.nama }}</div>
-            <div><strong>Kelas:</strong> {{ murid.kelas }}</div>
-        </div>
-        <div>
-            <div><strong>Wali Kelas:</strong> {{ murid.wali_kelas }}</div>
-            <div><strong>Tanggal Cetak:</strong> {{ now.strftime("%d-%m-%Y") }}</div>
-        </div>
-    </div>
+    <div style="width:80%; margin-bottom:20px;">
+  <!-- Baris 1 -->
+  <div style="display:flex; justify-content:space-between; border-bottom:1px solid #000; padding:5px 0;">
+    <div><strong>Nama:</strong> {{ murid.nama }}</div>
+    <div><strong>Kelas:</strong> {{ murid.kelas }}</div>
+  </div>
+  <!-- Baris 2 -->
+  <div style="display:flex; justify-content:space-between; border-bottom:1px solid #000; padding:5px 0;">
+    <div><strong>Wali Kelas:</strong> {{ murid.wali_kelas }}</div>
+    <div><strong>Tanggal Cetak:</strong> {{ now.strftime("%d-%m-%Y") }}</div>
+  </div>
+</div>
 
-    <!-- Nilai per kategori -->
     {% set kategori_list = ['BTQ', 'Diniyah', 'Praktek'] %}
     {% for kategori in kategori_list %}
-        <div class="kategori-title">{{ kategori }}</div>
+        <h3 style="text-align: left;">{{ kategori }}</h3>
         <table>
             <thead>
                 <tr>
@@ -117,34 +116,32 @@
                     </tr>
                     {% endfor %}
                 {% else %}
-                    <tr><td colspan="3">Belum ada nilai</td></tr>
+                    <tr><td colspan="3" class="center">Belum ada nilai</td></tr>
                 {% endif %}
             </tbody>
         </table>
     {% endfor %}
 
-    <!-- Rata-rata -->
     {% set all_nilai = nilai_list | map(attribute='nilai') | list %}
     {% if all_nilai %}
         {% set rata_rata = (all_nilai | sum / all_nilai|length) | round(2) %}
     {% else %}
         {% set rata_rata = 0 %}
     {% endif %}
-    <p class="rata-rata">Rata-rata: {{ rata_rata }}</p>
+    <p><strong>Rata-rata: {{ rata_rata }}</strong></p>
 
-    <!-- Tanda Tangan -->
     <div class="ttd">
         <div>
             <p>Kepala Madrasah</p><br><br><br>
-            <p><u>___________________</u></p>
+            <p>___________________</p>
         </div>
         <div>
             <p>Wali Kelas</p><br><br><br>
             <p>{{ murid.wali_kelas }}</p>
         </div>
         <div>
-            <p>Peserta Didik</p><br><br><br>
-            <p>{{ murid.nama }}</p>
+            <p>Wali Murid</p><br><br><br>
+            <p>{{ murid.nama_ayah }}</p>
         </div>
     </div>
 
