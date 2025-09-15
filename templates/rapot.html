@@ -81,22 +81,22 @@
     
     
 
-    <div style="width:100%; margin-bottom:20px;">
-  <!-- Baris 1 -->
-  <div style="display:flex; justify-content:space-between; border-bottom:1px solid #000; padding:5px 0;">
-    <div><strong>Nama:</strong> {{ murid.nama }}</div>
-    <div><strong>Kelas:</strong> {{ murid.kelas }}</div>
-  </div>
-  <!-- Baris 2 -->
-  <div style="display:flex; justify-content:space-between; border-bottom:1px solid #000; padding:5px 0;">
-    <div><strong>Wali Kelas:</strong> {{ murid.wali_kelas }}</div>
-    <div><strong>Tanggal Cetak:</strong> {{ now.strftime("%d-%m-%Y") }}</div>
-  </div>
-</div>
+    <div class="header-info">
+        <!-- Baris 1 -->
+        <div>
+            <div><strong>Nama:</strong> {{ murid.nama }}</div>
+            <div><strong>Kelas:</strong> {{ murid.kelas }}</div>
+        </div>
+        <!-- Baris 2 -->
+        <div>
+            <div><strong>Wali Kelas:</strong> {{ murid.wali_kelas }}</div>
+            <div><strong>Tanggal Cetak:</strong> {{ now.strftime("%d-%m-%Y") }}</div>
+        </div>
+    </div>
 
     {% set kategori_list = ['BTQ', 'Diniyah', 'Praktek'] %}
     {% for kategori in kategori_list %}
-        <h3 style="text-align: left;">{{ kategori }}</h3>
+        <div class="kategori-title">{{ kategori }}</div>
         <table>
             <thead>
                 <tr>
@@ -116,7 +116,7 @@
                     </tr>
                     {% endfor %}
                 {% else %}
-                    <tr><td colspan="3" class="center">Belum ada nilai</td></tr>
+                    <tr><td colspan="3">Belum ada nilai</td></tr>
                 {% endif %}
             </tbody>
         </table>
@@ -128,7 +128,7 @@
     {% else %}
         {% set rata_rata = 0 %}
     {% endif %}
-    <p><strong>Rata-rata: {{ rata_rata }}</strong></p>
+    <p style="text-align:center; font-weight:bold;">Rata-rata: {{ rata_rata }}</p>
 
     <div class="ttd">
         <div>
@@ -137,11 +137,11 @@
         </div>
         <div>
             <p>Wali Kelas</p><br><br><br>
-            <p>{{ murid.wali_kelas }}</p>
+            <p>{{ (murid.wali_kelas) }}</p>
         </div>
         <div>
-            <p>Peserta Didik</p><br><br><br>
-            <p>{{ murid.nama }}</p>
+            <p>Wali murid</p><br><br><br>
+            <p>{{ (murid.nama_ayah) }}</p>
         </div>
     </div>
 
