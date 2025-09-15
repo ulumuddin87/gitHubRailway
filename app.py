@@ -24,7 +24,13 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 import psycopg2.extras
 
 from flask import send_file
-from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
+
+
+
+
+
+
 
 
 
@@ -553,7 +559,7 @@ def rapot_pdf(murid_id, semester):
     cur.execute("SELECT * FROM murid WHERE id=%s", (murid_id,))
     murid = cur.fetchone()
 
-    # Ambil nilai murid
+    # Ambil nilai
     cur.execute("""
         SELECT n.nilai, n.deskripsi, m.nama AS mapel, m.kategori
         FROM nilai n
@@ -567,52 +573,69 @@ def rapot_pdf(murid_id, semester):
     conn.close()
 
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4,
+    pdf = SimpleDocTemplate(buffer, pagesize=A4,
                             rightMargin=40, leftMargin=40,
                             topMargin=40, bottomMargin=40)
-
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name="CenterBold", alignment=TA_CENTER, fontSize=14, leading=16, spaceAfter=10, fontName="Helvetica-Bold"))
-    styles.add(ParagraphStyle(name="SubTitle", alignment=TA_CENTER, fontSize=12, leading=14, spaceAfter=12))
-    styles.add(ParagraphStyle(name="NormalLeft", alignment=TA_LEFT, fontSize=11, leading=13))
-    styles.add(ParagraphStyle(name="Kategori", alignment=TA_LEFT, fontSize=12, leading=14, spaceBefore=10, fontName="Helvetica-Bold"))
-
     elements = []
 
     # === Kop Surat ===
-    elements.append(Paragraph("TAMAN PENDIDIKAN AL QUR'AN <br/>“MAFATIHUL HUDA”", styles["CenterBold"]))
-    elements.append(Paragraph("DESA BAKALANRAYUNG KECAMATAN KUDU KABUPATEN JOMBANG<br/>Nomor Statistik: 411.235.17.2074 | Telp. 0857-3634-0726", styles["SubTitle"]))
-    elements.append(Spacer(1, 4))
-    elements.append(Table([[ " " ]], colWidths=[450], rowHeights=[1], style=[("LINEBELOW", (0,0), (-1,-1), 1.2, colors.black)]))
-    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(
+        "TAMAN PENDIDIKAN AL QUR'AN<br/>“MAFATIHUL HUDA”",
+        ParagraphStyle(name="kop", alignment=TA_CENTER,
+                       fontSize=14, leading=16, spaceAfter=4,
+                       fontName="Helvetica-Bold")
+    ))
+    elements.append(Paragraph(
+        "BAKALANRAYUNG KECAMATAN KUDU – JOMBANG<br/>"
+        "Nomor Statistik: 411.235.17.2074 | Telp. 0857-3634-0726",
+        ParagraphStyle(name="alamat", alignment=TA_CENTER,
+                       fontSize=10, leading=12, spaceAfter=6)
+    ))
+    elements.append(Spacer(1, 5))
+    elements.append(Table([[""]], colWidths=[480],
+                         style=[("LINEBELOW", (0,0), (-1,-1), 1.2, colors.black)]))
+    elements.append(Spacer(1, 10))
 
     # === Judul ===
-    elements.append(Paragraph("LAPORAN HASIL BELAJAR", styles["CenterBold"]))
-    elements.append(Paragraph(f"SEMESTER {semester} {murid['kelas']}/{datetime.now().year}", styles["SubTitle"]))
-    elements.append(Spacer(1, 12))
+    elements.append(Paragraph("LAPORAN HASIL BELAJAR",
+        ParagraphStyle(name="judul", alignment=TA_CENTER,
+                       fontSize=14, fontName="Helvetica-Bold", spaceAfter=4)))
+    elements.append(Paragraph(f"SEMESTER {semester} 2025/2026",
+        ParagraphStyle(name="subjudul", alignment=TA_CENTER,
+                       fontSize=11, spaceAfter=20)))
 
-    # === Biodata (2 baris dengan garis bawah) ===
-    biodata_data = [
+    # === Data Murid (2 baris) ===
+    biodata = [
         [f"Nama: {murid['nama']}", f"Kelas: {murid['kelas']}"],
         [f"Wali Kelas: {murid['wali_kelas']}", f"Tanggal Cetak: {datetime.now().strftime('%d-%m-%Y')}"]
     ]
-    biodata = Table(biodata_data, colWidths=[225, 225])
-    biodata.setStyle(TableStyle([
+    table_bio = Table(biodata, colWidths=[240, 240])
+    table_bio.setStyle(TableStyle([
+        ("LINEBELOW", (0,0), (-1,0), 0.8, colors.black),
+        ("LINEBELOW", (0,1), (-1,1), 0.8, colors.black),
         ("ALIGN", (0,0), (-1,-1), "LEFT"),
-        ("FONTSIZE", (0,0), (-1,-1), 11),
-        ("LINEBELOW", (0,0), (-1,0), 1, colors.black),
-        ("LINEBELOW", (0,1), (-1,1), 1, colors.black),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+        ("FONTSIZE", (0,0), (-1,-1), 10),
     ]))
-    elements.append(biodata)
-    elements.append(Spacer(1, 16))
+    elements.append(table_bio)
+    elements.append(Spacer(1, 15))
 
     # === Tabel Nilai per Kategori ===
     kategori_list = ['BTQ', 'Diniyah', 'Praktek']
     for kategori in kategori_list:
-        elements.append(Paragraph(kategori, styles["Kategori"]))
-        data = [["Mata Pelajaran", "Nilai", "Deskripsi"]]
+        # judul kategori center
+        elements.append(Paragraph(kategori, ParagraphStyle(
+            name="KategoriCenter",
+            alignment=TA_CENTER,
+            fontSize=12,
+            leading=14,
+            spaceBefore=10,
+            spaceAfter=6,
+            fontName="Helvetica-Bold"
+        )))
 
+        # header tabel
+        data = [["Mata Pelajaran", "Nilai", "Deskripsi"]]
         kategori_nilai = [n for n in nilai_list if n['kategori'] == kategori]
         if kategori_nilai:
             for n in kategori_nilai:
@@ -620,7 +643,9 @@ def rapot_pdf(murid_id, semester):
         else:
             data.append(["Belum ada nilai", "", ""])
 
+        # tabel center
         table = Table(data, colWidths=[150, 60, 240])
+        table.hAlign = "CENTER"
         table.setStyle(TableStyle([
             ("GRID", (0,0), (-1,-1), 1, colors.black),
             ("BACKGROUND", (0,0), (-1,0), colors.lightgrey),
@@ -633,33 +658,34 @@ def rapot_pdf(murid_id, semester):
 
     # === Rata-rata ===
     if nilai_list:
-        rata_rata = round(sum(n['nilai'] for n in nilai_list) / len(nilai_list), 2)
+        rata_rata = round(sum(n['nilai'] for n in nilai_list)/len(nilai_list), 2)
     else:
         rata_rata = 0
-    elements.append(Paragraph(f"Rata-rata: {rata_rata}", ParagraphStyle(name="Rata", alignment=TA_CENTER, fontSize=11, fontName="Helvetica-Bold")))
-    elements.append(Spacer(1, 30))
+    elements.append(Paragraph(f"Rata-rata: {rata_rata}",
+        ParagraphStyle(name="rata", alignment=TA_CENTER,
+                       fontSize=11, fontName="Helvetica-Bold", spaceAfter=20)))
 
     # === TTD ===
-    ttd_data = [
+    ttd = [
         ["Kepala Madrasah", "Wali Kelas", "Wali Murid"],
-        ["\n\n__________________", f"\n\n{murid['wali_kelas']}", f"\n\n{murid['nama_ayah']}"]
+        ["", "", ""],
+        ["___________________", murid['wali_kelas'], murid['nama_ayah']]
     ]
-    ttd = Table(ttd_data, colWidths=[150, 150, 150])
-    ttd.setStyle(TableStyle([
+    table_ttd = Table(ttd, colWidths=[160, 160, 160])
+    table_ttd.setStyle(TableStyle([
         ("ALIGN", (0,0), (-1,-1), "CENTER"),
-        ("FONTSIZE", (0,0), (-1,-1), 11),
-        ("TOPPADDING", (0,0), (-1,0), 0),
-        ("BOTTOMPADDING", (0,0), (-1,0), 20),
+        ("FONTSIZE", (0,0), (-1,-1), 10),
+        ("TOPPADDING", (0,1), (-1,1), 30),  # jarak tanda tangan
     ]))
-    elements.append(ttd)
+    elements.append(table_ttd)
 
-    # === Build PDF ===
-    doc.build(elements)
+    pdf.build(elements)
     buffer.seek(0)
 
     return send_file(buffer, as_attachment=True,
                      download_name=f"Rapot_{murid['nama']}_Semester_{semester}.pdf",
-                     mimetype="application/pdf")
+                     mimetype='application/pdf')
+
 
 
 # ================= RUN ================= #
