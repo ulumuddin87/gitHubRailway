@@ -28,11 +28,31 @@
             margin-bottom: 15px;
             font-size: 12pt;
         }
+        table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 15px;
+        font-size: 12pt;
+        }
         th, td {
             border: 1px solid #000;
             padding: 6px;
-            text-align: left;
+            text-align: center;
         }
+        th {
+            background-color: #e0e0e0;
+            font-weight: bold;
+        }
+        .kategori-title {
+            text-align: left;
+            font-size: 12pt;
+            font-weight: bold;
+            margin: 15px 0 5px 0;
+        }
+        .col-mapel { width: 35%; }
+        .col-nilai { width: 15%; }
+        .col-deskripsi { width: 50%; }
+        
         th.kategori {
             text-align: center;
             width: 15%;
@@ -97,7 +117,7 @@
 
 {% set kategori_list = ['BTQ', 'Diniyah', 'Praktek'] %}
 {% for kategori in kategori_list %}
-    <h3 style="text-align:left; margin:15px 0 5px 0;">{{ kategori }}</h3>
+    <h3 style="text-align:center; margin:15px 0 5px 0;">{{ kategori }}</h3>
     <table style="width:100%; border-collapse:collapse; margin-bottom:15px; font-size:12pt;">
         <thead>
             <tr style="background-color:#a2c7f7;">
