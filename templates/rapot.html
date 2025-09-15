@@ -81,27 +81,18 @@
     
     
 
-    <div class="header-info">
-     <table style="width:100%; margin-bottom:20px; border-collapse: collapse;">
-      <tr>
-        <td style="width:25%; font-weight:bold;">Nama</td>
-        <td style="border-bottom:1px solid #000;">{{ murid.nama }}</td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">Kelas</td>
-        <td style="border-bottom:1px solid #000;">{{ murid.kelas }}</td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">Wali Kelas</td>
-        <td style="border-bottom:1px solid #000;">{{ murid.wali_kelas }}</td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold;">Tanggal Cetak</td>
-        <td style="border-bottom:1px solid #000;">{{ now.strftime("%d-%m-%Y") }}</td>
-      </tr>
-     </table>
-    </div>
-
+    <div style="width:100%; margin-bottom:20px;">
+  <!-- Baris 1 -->
+  <div style="display:flex; justify-content:space-between; border-bottom:1px solid #000; padding:5px 0;">
+    <div><strong>Nama:</strong> {{ murid.nama }}</div>
+    <div><strong>Kelas:</strong> {{ murid.kelas }}</div>
+  </div>
+  <!-- Baris 2 -->
+  <div style="display:flex; justify-content:space-between; border-bottom:1px solid #000; padding:5px 0;">
+    <div><strong>Wali Kelas:</strong> {{ murid.wali_kelas }}</div>
+    <div><strong>Tanggal Cetak:</strong> {{ now.strftime("%d-%m-%Y") }}</div>
+  </div>
+</div>
 
     {% set kategori_list = ['BTQ', 'Diniyah', 'Praktek'] %}
     {% for kategori in kategori_list %}
