@@ -115,15 +115,16 @@
   </div>
 </div>
 
+
 {% set kategori_list = ['BTQ', 'Diniyah', 'Praktek'] %}
 {% for kategori in kategori_list %}
-    <h3 style="text-align:center; margin:15px 0 5px 0;">{{ kategori }}</h3>
-    <table style="width:100%; border-collapse:collapse; margin-bottom:15px; font-size:12pt;">
+    <div class="kategori-title">{{ kategori }}</div>
+    <table>
         <thead>
-            <tr style="background-color:#a2c7f7;">
-                <th style="border:1px solid #000; padding:6px; text-align:center;">Mata Pelajaran</th>
-                <th style="border:1px solid #000; padding:6px; text-align:center;">Nilai</th>
-                <th style="border:1px solid #000; padding:6px; text-align:center;">Deskripsi</th>
+            <tr>
+                <th class="col-mapel">Mata Pelajaran</th>
+                <th class="col-nilai">Nilai</th>
+                <th class="col-deskripsi">Deskripsi</th>
             </tr>
         </thead>
         <tbody>
@@ -131,14 +132,14 @@
             {% if kategori_nilai %}
                 {% for n in kategori_nilai %}
                 <tr>
-                    <td style="border:1px solid #000; padding:6px; text-align:center;">{{ n.mapel }}</td>
-                    <td style="border:1px solid #000; padding:6px; text-align:center;">{{ n.nilai }}</td>
-                    <td style="border:1px solid #000; padding:6px; text-align:center;">{{ n.deskripsi }}</td>
+                    <td class="col-mapel">{{ n.mapel }}</td>
+                    <td class="col-nilai">{{ n.nilai }}</td>
+                    <td class="col-deskripsi">{{ n.deskripsi }}</td>
                 </tr>
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="3" style="border:1px solid #000; padding:6px; text-align:center;">Belum ada nilai</td>
+                    <td colspan="3">Belum ada nilai</td>
                 </tr>
             {% endif %}
         </tbody>
