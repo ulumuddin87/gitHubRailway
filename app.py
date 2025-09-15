@@ -10,7 +10,7 @@ from datetime import date
 from flask import Flask, send_file, abort
 import psycopg2
 from io import BytesIO
-from reportlab.lib.pagesizes import A4
+
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
@@ -22,6 +22,11 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
 import psycopg2.extras
+
+from flask import send_file
+from reportlab.pdfgen import canvas
+
+
 
 # Load environment dari file .env
 load_dotenv()
@@ -536,6 +541,118 @@ def rapot(murid_id, semester):
         )
     finally:
         conn.close()
+
+
+
+# === Unduh Rapot ===
+@app.route("/rapot/pdf/<int:murid_id>/<semester>")
+def rapot_pdf(murid_id, semester):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Ambil data murid
+    cur.execute("SELECT * FROM murid WHERE id=%s", (murid_id,))
+    murid = cur.fetchone()
+
+    # Ambil nilai murid
+    cur.execute("""
+        SELECT n.nilai, n.deskripsi, m.nama AS mapel, m.kategori
+        FROM nilai n
+        JOIN mapel m ON n.mapel_id = m.id
+        WHERE n.murid_id = %s AND n.semester = %s
+        ORDER BY m.kategori, m.nama
+    """, (murid_id, semester))
+    nilai_list = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    y = height - 50
+
+    # Kop surat
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawCentredString(width/2, y, "TAMAN PENDIDIKAN AL QUR'AN “MAFATIHUL HUDA”")
+    y -= 20
+    pdf.setFont("Helvetica", 12)
+    pdf.drawCentredString(width/2, y, "BAKALANRAYUNG KECAMATAN KUDU – JOMBANG | Telp. 0857-3634-0726")
+    y -= 5
+    pdf.line(40, y, width-40, y)
+    y -= 25
+
+    # Judul
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawCentredString(width/2, y, f"LAPORAN HASIL BELAJAR")
+    y -= 18
+    pdf.setFont("Helvetica", 12)
+    pdf.drawCentredString(width/2, y, f"SEMESTER {semester} 2025/2026")
+    y -= 30
+
+    # Info murid
+    pdf.setFont("Helvetica", 11)
+    pdf.drawString(50, y, f"Nama: {murid['nama']}")
+    y -= 15
+    pdf.drawString(50, y, f"Kelas: {murid['kelas']}")
+    y -= 15
+    pdf.drawString(50, y, f"Wali Kelas: {murid['wali_kelas']}")
+    y -= 15
+    pdf.drawString(50, y, f"Tanggal Cetak: {datetime.now().strftime('%d-%m-%Y')}")
+    y -= 30
+
+    # Kategori
+    kategori_list = ['BTQ', 'Diniyah', 'Praktek']
+    for kategori in kategori_list:
+        pdf.setFont("Helvetica-Bold", 12)
+        pdf.drawString(50, y, kategori)
+        y -= 20
+
+        # Tabel header
+        pdf.setFont("Helvetica-Bold", 10)
+        pdf.drawString(50, y, "Mata Pelajaran")
+        pdf.drawString(250, y, "Nilai")
+        pdf.drawString(350, y, "Deskripsi")
+        y -= 15
+        pdf.line(50, y, width-50, y)
+        y -= 5
+
+        pdf.setFont("Helvetica", 10)
+        kategori_nilai = [n for n in nilai_list if n['kategori']==kategori]
+        if kategori_nilai:
+            for n in kategori_nilai:
+                pdf.drawString(50, y, n['mapel'])
+                pdf.drawString(250, y, str(n['nilai']))
+                pdf.drawString(350, y, n['deskripsi'])
+                y -= 15
+                if y < 80:
+                    pdf.showPage()
+                    y = height - 50
+        else:
+            pdf.drawString(50, y, "Belum ada nilai")
+            y -= 15
+
+        y -= 15
+
+    # Rata-rata
+    if nilai_list:
+        rata_rata = round(sum(n['nilai'] for n in nilai_list)/len(nilai_list), 2)
+    else:
+        rata_rata = 0
+    pdf.setFont("Helvetica-Bold", 11)
+    pdf.drawString(50, y, f"Rata-rata: {rata_rata}")
+    y -= 40
+
+    # TTD
+    pdf.drawCentredString(width*1/6, y, "Kepala Madrasah\n\n___________________")
+    pdf.drawCentredString(width*3/6, y, f"Wali Kelas\n\n{murid['wali_kelas']}")
+    pdf.drawCentredString(width*5/6, y, f"Peserta Didik\n\n{murid['nama']}")
+
+    pdf.showPage()
+    pdf.save()
+    buffer.seek(0)
+
+    return send_file(buffer, as_attachment=True, download_name=f"Rapot_{murid['nama']}_Semester_{semester}.pdf", mimetype='application/pdf')
 
 
 # ================= RUN ================= #
