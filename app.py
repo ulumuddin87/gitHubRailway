@@ -414,32 +414,21 @@ def riwayat_murid(id):
 
 
 # ================= MAPEL ================= #
-@app.route("/mapel")
-def data_mapel():
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
-    cur.execute("SELECT * FROM mapel ORDER BY id ASC")
-    mapel_list = cur.fetchall()
-
-    cur.close()
-    conn.close()
-
-    return render_template("mapel.html", mapel=mapel_list)
-
 # Tambah Mapel
 @app.route("/mapel/tambah", methods=["POST"])
 def tambah_mapel():
     nama = request.form.get("nama")
+    kategori = request.form.get("kategori")
     deskripsi = request.form.get("deskripsi")
 
-    if not nama or not deskripsi:
-        flash("⚠️ Nama & Deskripsi mapel wajib diisi!", "danger")
+    if not nama or not deskripsi or not kategori:
+        flash("⚠️ Nama, Kategori & Deskripsi mapel wajib diisi!", "danger")
         return redirect(request.referrer)
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO mapel (nama, deskripsi) VALUES (%s, %s)", (nama, deskripsi))
+    cur.execute("INSERT INTO mapel (nama, kategori, deskripsi) VALUES (%s, %s, %s)", 
+                (nama, kategori, deskripsi))
     conn.commit()
     cur.close()
     conn.close()
@@ -447,20 +436,21 @@ def tambah_mapel():
     flash(f"✅ Mapel '{nama}' berhasil ditambahkan!", "success")
     return redirect(request.referrer)
 
-
 # Ubah Mapel
 @app.route("/mapel/edit/<int:id>", methods=["POST"])
 def edit_mapel(id):
     nama = request.form.get("nama")
+    kategori = request.form.get("kategori")
     deskripsi = request.form.get("deskripsi")
 
-    if not nama or not deskripsi:
-        flash("⚠️ Nama & Deskripsi wajib diisi!", "danger")
+    if not nama or not deskripsi or not kategori:
+        flash("⚠️ Semua field wajib diisi!", "danger")
         return redirect(request.referrer)
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE mapel SET nama=%s, deskripsi=%s WHERE id=%s", (nama, deskripsi, id))
+    cur.execute("UPDATE mapel SET nama=%s, kategori=%s, deskripsi=%s WHERE id=%s", 
+                (nama, kategori, deskripsi, id))
     conn.commit()
     cur.close()
     conn.close()

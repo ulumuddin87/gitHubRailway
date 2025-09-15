@@ -19,8 +19,9 @@
             <tr class="text-center">
                 <th style="width: 5%;">No</th>
                 <th style="width: 25%;">Nama Mapel</th>
-                <th style="width: 50%;">Deskripsi</th>
-                <th style="width: 20%;">Aksi</th>
+                <th style="width: 20%;">Kategori</th>
+                <th style="width: 40%;">Deskripsi</th>
+                <th style="width: 10%;">Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -28,18 +29,18 @@
             <tr>
                 <td class="text-center">{{ loop.index }}</td>
                 <td>{{ m.nama }}</td>
+                <td>{{ m.kategori }}</td>
                 <td>{{ m.deskripsi }}</td>
                 <td class="text-center">
                     <!-- Tombol Edit -->
                     <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal"
                         data-bs-target="#modalEdit{{ m.id }}">
-                        ✏️ Ubah
+                        ✏️
                     </button>
-
                     <!-- Tombol Hapus -->
                     <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
                         data-bs-target="#modalHapus{{ m.id }}">
-                        🗑️ Hapus
+                        🗑️
                     </button>
                 </td>
             </tr>
@@ -57,6 +58,10 @@
                                 <div class="mb-3">
                                     <label class="form-label">Nama Mapel</label>
                                     <input type="text" class="form-control" name="nama" value="{{ m.nama }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Kategori</label>
+                                    <input type="text" class="form-control" name="kategori" value="{{ m.kategori }}" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Deskripsi</label>
@@ -111,6 +116,10 @@
                     <div class="mb-3">
                         <label class="form-label">Nama Mapel</label>
                         <input type="text" class="form-control" name="nama" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kategori</label>
+                        <input type="text" class="form-control" name="kategori" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Deskripsi</label>
