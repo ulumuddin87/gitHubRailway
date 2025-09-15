@@ -81,54 +81,58 @@
     
     
 
-    <div style="width:80%; margin-bottom:20px;">
+    <div style="width:80%; margin:0 auto 20px auto;">
   <!-- Baris 1 -->
-  <div style="display:flex; justify-content:space-between; border-bottom:1px solid #000; padding:5px 0;">
-    <div><strong>Nama:</strong> {{ murid.nama }}</div>
-    <div><strong>Kelas:</strong> {{ murid.kelas }}</div>
+  <div style="display:flex; justify-content:space-between; border-bottom:1px solid #000; padding:5px 0; text-align:center;">
+    <div style="flex:1; text-align:left;"><strong>Nama:</strong> {{ murid.nama }}</div>
+    <div style="flex:1; text-align:right;"><strong>Kelas:</strong> {{ murid.kelas }}</div>
   </div>
   <!-- Baris 2 -->
-  <div style="display:flex; justify-content:space-between; border-bottom:1px solid #000; padding:5px 0;">
-    <div><strong>Wali Kelas:</strong> {{ murid.wali_kelas }}</div>
-    <div><strong>Tanggal Cetak:</strong> {{ now.strftime("%d-%m-%Y") }}</div>
+  <div style="display:flex; justify-content:space-between; border-bottom:1px solid #000; padding:5px 0; text-align:center;">
+    <div style="flex:1; text-align:left;"><strong>Wali Kelas:</strong> {{ murid.wali_kelas }}</div>
+    <div style="flex:1; text-align:right;"><strong>Tanggal Cetak:</strong> {{ now.strftime("%d-%m-%Y") }}</div>
   </div>
 </div>
 
-    {% set kategori_list = ['BTQ', 'Diniyah', 'Praktek'] %}
-    {% for kategori in kategori_list %}
-        <h3 style="text-align: left;">{{ kategori }}</h3>
-        <table>
-            <thead>
+{% set kategori_list = ['BTQ', 'Diniyah', 'Praktek'] %}
+{% for kategori in kategori_list %}
+    <h3 style="text-align:left; margin-bottom:5px;">{{ kategori }}</h3>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:15px; text-align:center;">
+        <thead>
+            <tr>
+                <th style="border:1px solid #000; padding:6px;">Mata Pelajaran</th>
+                <th style="border:1px solid #000; padding:6px;">Nilai</th>
+                <th style="border:1px solid #000; padding:6px;">Deskripsi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set kategori_nilai = nilai_list | selectattr("kategori", "equalto", kategori) | list %}
+            {% if kategori_nilai %}
+                {% for n in kategori_nilai %}
                 <tr>
-                    <th>Mata Pelajaran</th>
-                    <th>Nilai</th>
-                    <th>Deskripsi</th>
+                    <td style="border:1px solid #000; padding:6px;">{{ n.mapel }}</td>
+                    <td style="border:1px solid #000; padding:6px;">{{ n.nilai }}</td>
+                    <td style="border:1px solid #000; padding:6px;">{{ n.deskripsi }}</td>
                 </tr>
-            </thead>
-            <tbody>
-                {% set kategori_nilai = nilai_list | selectattr("kategori", "equalto", kategori) | list %}
-                {% if kategori_nilai %}
-                    {% for n in kategori_nilai %}
-                    <tr>
-                        <td>{{ n.mapel }}</td>
-                        <td>{{ n.nilai }}</td>
-                        <td>{{ n.deskripsi }}</td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr><td colspan="3" class="center">Belum ada nilai</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
-    {% endfor %}
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3" style="border:1px solid #000; padding:6px;">Belum ada nilai</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+{% endfor %}
 
-    {% set all_nilai = nilai_list | map(attribute='nilai') | list %}
-    {% if all_nilai %}
-        {% set rata_rata = (all_nilai | sum / all_nilai|length) | round(2) %}
-    {% else %}
-        {% set rata_rata = 0 %}
-    {% endif %}
-    <p><strong>Rata-rata: {{ rata_rata }}</strong></p>
+{% set all_nilai = nilai_list | map(attribute='nilai') | list %}
+{% if all_nilai %}
+    {% set rata_rata = (all_nilai | sum / all_nilai|length) | round(2) %}
+{% else %}
+    {% set rata_rata = 0 %}
+{% endif %}
+<p style="text-align:center; font-weight:bold; margin-top:10px;">
+    Rata-rata: {{ rata_rata }}
+</p>
 
     <div class="ttd">
         <div>
