@@ -498,22 +498,38 @@ def rapot(murid_id, semester):
         if not murid:
             return "Murid tidak ditemukan", 404
 
-        # Ambil nilai sesuai semester
+        # Tahun ajaran otomatis
+        now = datetime.now()
+        if now.month >= 7:
+            tahun_ajaran = f"{now.year}/{now.year + 1}"
+        else:
+            tahun_ajaran = f"{now.year - 1}/{now.year}"
+
+        # Ambil nilai sesuai semester + kategori mapel
+        # Asumsikan table 'mapel' ada kolom 'kategori' (BTQ, Diniyah, Praktek)
         cur.execute("""
-            SELECT n.nilai, n.deskripsi, m.nama AS mapel
-            FROM nilai n
-            JOIN mapel m ON m.id = n.mapel_id
-            WHERE n.murid_id = %s AND n.semester = %s
-            ORDER BY m.nama ASC
-        """, (murid_id, semester))
-        nilai_list = cur.fetchall()
+            SELECT n.nilai, n.deskripsi, m.nama AS mapel, m.kategori
+            FROM mapel m
+            LEFT JOIN nilai n
+                ON n.mapel_id = m.id AND n.murid_id = %s AND n.semester = %s AND n.tahun_ajaran = %s
+            ORDER BY m.kategori ASC, m.nama ASC
+        """, (murid_id, semester, tahun_ajaran))
+        nilai_list = []
+        for row in cur.fetchall():
+            nilai_list.append({
+                "mapel": row["mapel"],
+                "nilai": row["nilai"] if row["nilai"] is not None else 0,
+                "deskripsi": row["deskripsi"] if row["deskripsi"] else "Belum ada deskripsi",
+                "kategori": row["kategori"] if row["kategori"] else "Lain-lain"
+            })
 
         return render_template(
             "rapot.html",
             murid=murid,
             nilai_list=nilai_list,
             semester=semester,
-            now=datetime.now()
+            tahun_ajaran=tahun_ajaran,
+            now=now
         )
     finally:
         conn.close()
