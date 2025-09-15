@@ -81,19 +81,20 @@
     
     
 
+   
+    <!-- Biodata -->
     <div class="header-info">
-        <!-- Baris 1 -->
         <div>
             <div><strong>Nama:</strong> {{ murid.nama }}</div>
             <div><strong>Kelas:</strong> {{ murid.kelas }}</div>
         </div>
-        <!-- Baris 2 -->
         <div>
             <div><strong>Wali Kelas:</strong> {{ murid.wali_kelas }}</div>
             <div><strong>Tanggal Cetak:</strong> {{ now.strftime("%d-%m-%Y") }}</div>
         </div>
     </div>
 
+    <!-- Nilai per kategori -->
     {% set kategori_list = ['BTQ', 'Diniyah', 'Praktek'] %}
     {% for kategori in kategori_list %}
         <div class="kategori-title">{{ kategori }}</div>
@@ -122,26 +123,28 @@
         </table>
     {% endfor %}
 
+    <!-- Rata-rata -->
     {% set all_nilai = nilai_list | map(attribute='nilai') | list %}
     {% if all_nilai %}
         {% set rata_rata = (all_nilai | sum / all_nilai|length) | round(2) %}
     {% else %}
         {% set rata_rata = 0 %}
     {% endif %}
-    <p style="text-align:center; font-weight:bold;">Rata-rata: {{ rata_rata }}</p>
+    <p class="rata-rata">Rata-rata: {{ rata_rata }}</p>
 
+    <!-- Tanda Tangan -->
     <div class="ttd">
         <div>
             <p>Kepala Madrasah</p><br><br><br>
-            <p>___________________</p>
+            <p><u>___________________</u></p>
         </div>
         <div>
             <p>Wali Kelas</p><br><br><br>
-            <p>{{ (murid.wali_kelas) }}</p>
+            <p>{{ murid.wali_kelas }}</p>
         </div>
         <div>
-            <p>Wali murid</p><br><br><br>
-            <p>{{ (murid.nama_ayah) }}</p>
+            <p>Peserta Didik</p><br><br><br>
+            <p>{{ murid.nama }}</p>
         </div>
     </div>
 
