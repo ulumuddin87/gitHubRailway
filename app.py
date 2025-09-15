@@ -318,29 +318,43 @@ def nilai_murid(id):
         else:
             tahun_ajaran = f"{now.year - 1}/{now.year}"
 
+        
+    # UPLOAD >> Cek dulu apakah nilai untuk semester & tahun ajaran sudah ada    
         if action == "upload":
-            for m in mapel_list:
-                nilai = request.form.get(f"mapel_{m['id']}")
-                deskripsi = request.form.get(f"deskripsi_{m['id']}")
+            cur.execute("""
+            SELECT COUNT(*) FROM nilai 
+            WHERE murid_id=%s AND semester=%s AND tahun_ajaran=%s
+        """, (id, semester, tahun_ajaran))
+        exists = cur.fetchone()[0]
 
-                if not nilai or not deskripsi:
-                    flash(f"⚠️ Nilai atau deskripsi untuk {m['nama']} belum lengkap!", "danger")
-                    cur.close()
-                    conn.close()
-                    return redirect(request.url)
-
-                cur.execute("""
-                    INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, deskripsi)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (murid_id, mapel_id, semester, tahun_ajaran)
-                    DO UPDATE SET nilai = EXCLUDED.nilai, deskripsi = EXCLUDED.deskripsi
-                """, (id, m["id"], semester, tahun_ajaran, nilai, deskripsi))
-
-            conn.commit()
-            flash("✅ Semua nilai & deskripsi berhasil disimpan!", "success")
+        if exists > 0:
+            flash(f"⚠️ Nilai untuk semester '{semester}' tahun ajaran {tahun_ajaran} sudah diinput sebelumnya!", "danger")
             cur.close()
             conn.close()
             return redirect(request.url)
+
+    # Kalau belum ada, baru insert
+        for m in mapel_list:
+            nilai = request.form.get(f"mapel_{m['id']}")
+            deskripsi = request.form.get(f"deskripsi_{m['id']}")
+
+            if not nilai or not deskripsi:
+                flash(f"⚠️ Nilai atau deskripsi untuk {m['nama']} belum lengkap!", "danger")
+                cur.close()
+                conn.close()
+                return redirect(request.url)
+
+            cur.execute("""
+                INSERT INTO nilai (murid_id, mapel_id, semester, tahun_ajaran, nilai, deskripsi)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (id, m["id"], semester, tahun_ajaran, nilai, deskripsi))
+
+        conn.commit()
+        flash("✅ Semua nilai & deskripsi berhasil disimpan!", "success")
+        cur.close()
+        conn.close()
+        return redirect(request.url)
+
 
     # Ambil nilai existing untuk tampilkan di form (edit/update)
     nilai_existing = {}
