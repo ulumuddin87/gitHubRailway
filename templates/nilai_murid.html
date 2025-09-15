@@ -14,14 +14,17 @@
     </ul>
 
     <!-- Pilih Semester dan Tombol Rapot -->
-    <div class="mb-4 d-flex align-items-end gap-2">
-      <div class="flex-grow-1">
-        <label for="semester" class="form-label">Semester:</label>
-        <select name="semester" id="semester" class="form-select" required>
-          <option value="Ganjil">Ganjil</option>
-          <option value="Genap">Genap</option>
-        </select>
-      </div>
+  <form method="POST" id="formNilai" onsubmit="return confirmSubmit(event)">
+  <div class="row g-3">
+    <!-- Pilih Semester -->
+    <div class="col-md-12 mb-3">
+      <label for="semester" class="form-label">Semester:</label>
+      <select name="semester" id="semester" class="form-select" required>
+        <option value="Ganjil">Ganjil</option>
+        <option value="Genap">Genap</option>
+      </select>
+    </div>
+    
 
       <div class="d-flex align-items-end">
         <a href="#" id="btnRapot" class="btn btn-primary">
