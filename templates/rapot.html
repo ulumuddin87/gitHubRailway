@@ -75,15 +75,19 @@
     <hr class="kop">
 
     <div class="semester">
-        LAPORAN HASIL BELAJAR - SEMESTER {{ semester }} {{ tahun_ajaran }}
+        <h1>LAPORAN HASIL BELAJAR</h1>
+        <h2>SEMESTER {{ semester }} {{ tahun_ajaran }}</h2>
     </div>
+    
+    
 
     <div class="header-info">
-        <p>Nama: <strong>{{ murid.nama }}</strong></p>
-        <p>Kelas: <strong>{{ murid.kelas }}</strong></p>
-        <p>Wali Kelas: <strong>{{ murid.wali_kelas }}</strong></p>
-        <p>Tanggal Cetak: <strong>{{ now.strftime("%d-%m-%Y") }}</strong></p>
+        <p><span class="label">Nama:</span> <strong>{{ murid.nama }}</strong></p>
+        <p><span class="label">Kelas:</span> <strong>{{ murid.kelas }}</strong></p>
+        <p><span class="label">Wali Kelas:</span> <strong>{{ murid.wali_kelas }}</strong></p>
+        <p><span class="label">Tanggal Cetak:</span> <strong>{{ now.strftime("%d-%m-%Y") }}</strong></p>
     </div>
+
 
     {% set kategori_list = ['BTQ', 'Diniyah', 'Praktek'] %}
     {% for kategori in kategori_list %}
