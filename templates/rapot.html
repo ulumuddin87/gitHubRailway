@@ -82,10 +82,24 @@
     
 
     <div class="header-info">
-        <p><span class="label">Nama:</span> <strong>{{ murid.nama }}</strong></p>
-        <p><span class="label">Kelas:</span> <strong>{{ murid.kelas }}</strong></p>
-        <p><span class="label">Wali Kelas:</span> <strong>{{ murid.wali_kelas }}</strong></p>
-        <p><span class="label">Tanggal Cetak:</span> <strong>{{ now.strftime("%d-%m-%Y") }}</strong></p>
+     <table style="width:100%; margin-bottom:20px; border-collapse: collapse;">
+      <tr>
+        <td style="width:25%; font-weight:bold;">Nama</td>
+        <td style="border-bottom:1px solid #000;">{{ murid.nama }}</td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">Kelas</td>
+        <td style="border-bottom:1px solid #000;">{{ murid.kelas }}</td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">Wali Kelas</td>
+        <td style="border-bottom:1px solid #000;">{{ murid.wali_kelas }}</td>
+      </tr>
+      <tr>
+        <td style="font-weight:bold;">Tanggal Cetak</td>
+        <td style="border-bottom:1px solid #000;">{{ now.strftime("%d-%m-%Y") }}</td>
+      </tr>
+     </table>
     </div>
 
 
