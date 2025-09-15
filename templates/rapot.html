@@ -2,14 +2,25 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Rapot {{ murid.nama }} - Semester {{ semester }}</title>
+    <title>Rapor {{ semester }} {{ now.year }}/{{ now.year + 1 }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
         }
-        h2, h3 {
+        h2 {
             text-align: center;
+            margin-bottom: 5px;
+        }
+        h3 {
+            text-align: center;
+            margin-top: 5px;
+            margin-bottom: 20px;
+        }
+        .semester {
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 25px;
         }
         table {
             width: 100%;
@@ -21,11 +32,15 @@
             padding: 6px;
             text-align: left;
         }
+        th.kategori {
+            text-align: left;
+            width: 15%;
+        }
         .center {
             text-align: center;
         }
-        .header-info p {
-            margin: 2px 0;
+        .header-info {
+            margin-bottom: 20px;
         }
         .ttd {
             display: flex;
@@ -36,58 +51,72 @@
             width: 30%;
             text-align: center;
         }
+        hr.kop {
+            border: 2px solid #000;
+            margin-bottom: 20px;
+        }
+        .buttons {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <h2>TAMAN PENDIDIKAN AL QUR'AN <br>“MAFATIHUL HUDA”</h2>
-    <p class="center">BAKALANRAYUNG KECAMATAN KUDU – JOMBANG<br>
-    Nomor Statistik: 411.235.17.2074 | Telp. 0857-3634-0726</p>
+    <div class="buttons">
+        <a href="{{ url_for('data_murid') }}" class="btn btn-secondary">⬅ Kembali</a>
+        <a href="{{ url_for('rapot_pdf', murid_id=murid.id, semester=semester) }}" class="btn btn-primary">⬇ Download PDF</a>
+    </div>
 
-    <h3>LAPORAN HASIL BELAJAR<br>SEMESTER {{ semester }} {{ tahun_ajaran }}</h3>
+    <h2>TAMAN PENDIDIKAN AL QUR'AN <br> “MAFATIHUL HUDA”</h2>
+    <p class="center">BAKALANRAYUNG KECAMATAN KUDU – JOMBANG<br>
+    Nomor Statistik : 411.235.17.2074 | Telp. 0857-3634-0726</p>
+    <hr class="kop">
+
+    <div class="semester">
+        LAPORAN HASIL BELAJAR - SEMESTER {{ semester }} {{ now.year }}/{{ now.year + 1 }}
+    </div>
 
     <div class="header-info">
         <p>Nama: <strong>{{ murid.nama }}</strong></p>
         <p>Kelas: <strong>{{ murid.kelas }}</strong></p>
         <p>Wali Kelas: <strong>{{ murid.wali_kelas }}</strong></p>
-        <p>Tanggal Cetak: <strong>{{ now.strftime("%d-%m-%Y") }}</strong></p>
+        <p>Tanggal: <strong>{{ now.strftime('%d-%m-%Y') }}</strong></p>
     </div>
 
-    {% set kategori_list = ['BTQ', 'Diniyah', 'Praktek'] %}
-    {% for kategori in kategori_list %}
-        <h3>{{ kategori }}</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Mata Pelajaran</th>
-                    <th>Nilai</th>
-                    <th>Deskripsi</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% set kategori_nilai = nilai_list | selectattr("kategori", "equalto", kategori) | list %}
-                {% if kategori_nilai %}
-                    {% for n in kategori_nilai %}
-                    <tr>
-                        <td>{{ n.mapel }}</td>
-                        <td>{{ n.nilai }}</td>
-                        <td>{{ n.deskripsi }}</td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr><td colspan="3" class="center">Belum ada nilai</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
-    {% endfor %}
+    <!-- Fungsi untuk menampilkan tabel per kategori -->
+    {% macro tabel_kategori(kategori, mata_pelajaran) %}
+    <h3>{{ kategori }}</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Mata Pelajaran</th>
+                <th>Nilai</th>
+                <th>Deskripsi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mp in mata_pelajaran %}
+            <tr>
+                <td>{{ mp.nama }}</td>
+                <td>{{ mp.nilai if mp.nilai is not none else '-' }}</td>
+                <td>{{ mp.deskripsi if mp.deskripsi else 'Belum ada deskripsi' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endmacro %}
 
-    {% set all_nilai = nilai_list | map(attribute='nilai') | list %}
-    {% if all_nilai %}
-        {% set rata_rata = (all_nilai | sum / all_nilai|length) | round(2) %}
-    {% else %}
-        {% set rata_rata = 0 %}
-    {% endif %}
-    <p><strong>Rata-rata: {{ rata_rata }}</strong></p>
+    {% set btq = nilai_list|selectattr('kategori','equalto','BTQ')|list %}
+    {% set diniyah = nilai_list|selectattr('kategori','equalto','Diniyah')|list %}
+    {% set praktek = nilai_list|selectattr('kategori','equalto','Praktek')|list %}
+
+    {{ tabel_kategori('BTQ', btq) }}
+    {{ tabel_kategori('Diniyah', diniyah) }}
+    {{ tabel_kategori('Praktek', praktek) }}
+
+    <p><strong>Rata-rata: {{ rata_rata if rata_rata else '0.00' }}</strong></p>
 
     <div class="ttd">
         <div>
