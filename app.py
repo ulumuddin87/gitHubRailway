@@ -272,7 +272,7 @@ def biodata_murid(id):
     if request.method == "POST":
         cur.execute("""
             UPDATE murid SET 
-                nama=%s, no_induk=%s, nik=%s, tempat_tanggal_lahir=%s, jenis_kelamin=%s,
+                nama=%s, no_induk=%s, nik=%s, tanggal_lahir=%s, tempat_lahir=%s, jenis_kelamin=%s,
                 status_dalam_keluarga=%s, anak_ke=%s,
                 nama_ayah=%s, no_tlp_ayah=%s, pekerjaan_ayah=%s,
                 nama_ibu=%s, no_tlp_ibu=%s, pekerjaan_ibu=%s,
@@ -280,7 +280,7 @@ def biodata_murid(id):
             WHERE id=%s
         """, (
             request.form.get("nama"), request.form.get("no_induk"), request.form.get("nik"),
-            request.form.get("tempat_tanggal_lahir"), request.form.get("jenis_kelamin"),
+            request.form.get("tanggal_lahir"), request.form.get("tempat_lahir"), request.form.get("jenis_kelamin"),
             request.form.get("status_dalam_keluarga"), request.form.get("anak_ke") or None,
             request.form.get("nama_ayah"), request.form.get("no_tlp_ayah"), request.form.get("pekerjaan_ayah"),
             request.form.get("nama_ibu"), request.form.get("no_tlp_ibu"), request.form.get("pekerjaan_ibu"),
