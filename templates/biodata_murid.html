@@ -38,8 +38,14 @@
 
           <div class="mb-3">
             <label class="form-label fw-semibold">Tanggal Lahir</label>
-            <input type="text" name="tanggal_lahir" value="{{ murid['tempat_tanggal_lahir'] or '' }}" class="form-control">
+            <input
+              type="date"
+              name="tanggal_lahir"
+              value="{{ murid['tanggal_lahir'].isoformat() if murid['tanggal_lahir'] else '' }}"
+              class="form-control"
+            >
           </div>
+
 
           <div class="mb-3">
             <label class="form-label fw-semibold">Jenis Kelamin</label>

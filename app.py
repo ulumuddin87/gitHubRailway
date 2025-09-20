@@ -270,6 +270,16 @@ def biodata_murid(id):
         return "Data murid tidak ditemukan", 404
 
     if request.method == "POST":
+        # Ambil tanggal lahir dari form
+        tgl_lahir_str = request.form.get("tanggal_lahir")
+        tanggal_lahir = None
+        if tgl_lahir_str:  # jika user mengisi
+            try:
+                tanggal_lahir = datetime.strptime(tgl_lahir_str, "%Y-%m-%d").date()
+            except ValueError:
+                flash("⚠️ Format tanggal tidak valid. Gunakan format YYYY-MM-DD.", "danger")
+                return redirect(request.url)
+
         cur.execute("""
             UPDATE murid SET 
                 nama=%s, no_induk=%s, nik=%s, tanggal_lahir=%s, tempat_lahir=%s, jenis_kelamin=%s,
@@ -280,7 +290,7 @@ def biodata_murid(id):
             WHERE id=%s
         """, (
             request.form.get("nama"), request.form.get("no_induk"), request.form.get("nik"),
-            request.form.get("tanggal_lahir"), request.form.get("tempat_lahir"), request.form.get("jenis_kelamin"),
+            tanggal_lahir, request.form.get("tempat_lahir"), request.form.get("jenis_kelamin"),
             request.form.get("status_dalam_keluarga"), request.form.get("anak_ke") or None,
             request.form.get("nama_ayah"), request.form.get("no_tlp_ayah"), request.form.get("pekerjaan_ayah"),
             request.form.get("nama_ibu"), request.form.get("no_tlp_ibu"), request.form.get("pekerjaan_ibu"),
@@ -294,9 +304,14 @@ def biodata_murid(id):
         flash("✅ Data murid berhasil diperbarui!", "success")
         return redirect(url_for("data_murid"))
 
+    # GET → pastikan value dikonversi agar input type=date bisa prefill
+    if murid and murid["tanggal_lahir"]:
+        murid["tanggal_lahir"] = murid["tanggal_lahir"].isoformat()
+
     cur.close()
     conn.close()
     return render_template("biodata_murid.html", murid=murid)
+
 
 
 # ================= NILAI  ================= #
